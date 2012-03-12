@@ -133,7 +133,7 @@ function ResourceEventRenderer() {
     function eventsForResource(resource, events) {
         var resourceEvents = [];
 		
-        for(i=0; i<events.length; i++) {
+        for(var i=0; i<events.length; i++) {
             if(events[i].resourceId === resource.id) {
                 resourceEvents.push(events[i])
             }

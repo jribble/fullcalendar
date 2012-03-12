@@ -594,11 +594,10 @@ function ResourceView(element, calendar, viewName) {
     
     /* return the column index the resource is at.  Return -1 if resource cannot be found. */
     function resourceCol(resource) {
-        for (i=0; i<resources.length; i++) {
+        for (var i=0; i<resources.length; i++) {
             if (resource.id === resources[i].id)
                 return i;
         }
-        console.error("cannot find resource's column.  resource " + resource);
         return -1;
     }
 	
