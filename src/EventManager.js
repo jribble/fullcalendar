@@ -377,6 +377,22 @@ function EventManager(options, _sources) {
 			event.className = [];
 		}
 		// TODO: if there is no start date, return false to indicate an invalid event
+        
+        // resources
+		if(!event.resourceId) {
+            return;
+        }
+        
+        var resources = options.resources;
+        
+        $.each(
+            resources,
+        	function(index, resource){
+    			if(resource.id === event.resourceId) {
+					event.resource = resource;
+				}
+            }
+        );
 	}
 	
 	
