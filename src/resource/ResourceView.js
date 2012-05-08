@@ -59,7 +59,7 @@ function ResourceView(element, calendar, viewName) {
     t.dragStart = dragStart;
     t.dragStop = dragStop;
     t.resourceCol = resourceCol;
-    t.resources = fetchResources();
+    t.resources = calendar.fetchResources();
     
 	
     // imports
