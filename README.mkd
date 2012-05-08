@@ -47,4 +47,4 @@ Here is an example of doing it within an element having an `id` of `calendar`:
 To see a full list of all available options, please consult the [FullCalendar documentation &raquo;](http://arshaw.com/fullcalendar/docs/)
 
 *Note* This particular git fork adds a resourceDay view that shows resources horizontally and 
-each resource's calendar vertically.  See `demos/resorue-views.html` for usage.
+each resource's calendar vertically.  See `demos/resource-views.html` and `demos/json-resource-views.html` for usage.

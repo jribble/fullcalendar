@@ -52,22 +52,9 @@
                         console.log("@@ drag/drop event " + event.title + ", start " + event.start + ", end " + event.end + ", resource " + event.resourceId);
                     },
                     editable: true,
-                    resources: [
-                        {
-                            'id': 1,
-                            'name': 'resource1'
-                        },
-                        {
-                            'id': 2,
-                            'name': 'resource2'
-                        },
-                        {
-                            'id': 3,
-                            'name': 'resource3'
-                        }
-                    ],
+                    resources: 'json-resources.php',
                     events: 'json-resource-events.php'
-                });		
+                });
             });
 
         </script>

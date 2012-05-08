@@ -1,6 +1,6 @@
 
  
-function Calendar(element, options, eventSources) {
+function Calendar(element, options, eventSources, resourceSources) {
 	var t = this;
 	
 	
@@ -34,7 +34,8 @@ function Calendar(element, options, eventSources) {
 	EventManager.call(t, options, eventSources);
 	var isFetchNeeded = t.isFetchNeeded;
 	var fetchEvents = t.fetchEvents;
-	
+    
+    ResourceManager.call(t, options);
 	
 	// locals
 	var _element = element[0];
@@ -50,7 +51,7 @@ function Calendar(element, options, eventSources) {
 	var date = new Date();
 	var events = [];
 	var _dragElement;
-	
+    
 	
 	
 	/* Main Rendering

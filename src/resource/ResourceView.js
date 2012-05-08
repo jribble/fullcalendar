@@ -59,8 +59,8 @@ function ResourceView(element, calendar, viewName) {
     t.dragStart = dragStart;
     t.dragStop = dragStop;
     t.resourceCol = resourceCol;
-    t.resources = getResources();
-	
+    t.resources = fetchResources();
+    
 	
     // imports
     View.call(t, element, calendar, viewName);
@@ -77,7 +77,7 @@ function ResourceView(element, calendar, viewName) {
     //var daySelectionMousedown = t.daySelectionMousedown;  // redefine here
     var slotSegHtml = t.slotSegHtml;
     var formatDate = calendar.formatDate;
-	
+    
     
     // locals
 	
@@ -124,7 +124,7 @@ function ResourceView(element, calendar, viewName) {
     var minMinute, maxMinute;
     var colFormat;
     var resources = t.resources;
-	
+    
     
     
     /* Rendering
@@ -132,7 +132,7 @@ function ResourceView(element, calendar, viewName) {
 	
 	
     disableTextSelection(element.addClass('fc-agenda'));
-	
+
 	
     function renderResource() {
         colCnt = resources.length;
@@ -826,11 +826,4 @@ function ResourceView(element, calendar, viewName) {
         }
     }
 
-
-    /* get calendar resources
-	--------------------------------------------------------------------------------*/
-
-    function getResources() {
-        return calendar.options['resources'];
-    }
 }
