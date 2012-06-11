@@ -103,7 +103,7 @@ function ResourceManager(options) {
                         resources = res;
                     },
                     error: function() {
-                        console.error("ajax error");
+                        alert("ajax error");
                     },
                     async: false  // too much work coordinating callbacks so dumb it down
                 });
