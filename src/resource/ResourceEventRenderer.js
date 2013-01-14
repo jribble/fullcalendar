@@ -538,6 +538,7 @@ function ResourceEventRenderer() {
                 trigger('eventDragStop', eventElement, event, ev, ui);
                 if (cell && (dayDelta || minuteDelta || allDay)) {
                     // changed!
+                    event.oldResourceId = event.resourceId;
                     event.resourceId = resources[cell.col].id;
                     dayDelta = 0;
                     eventDrop(this, event, dayDelta, allDay ? 0 : minuteDelta, allDay, ev, ui);
