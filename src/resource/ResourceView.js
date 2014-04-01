@@ -50,7 +50,8 @@ function ResourceView(element, calendar, viewName) {
     t.getRowCnt = function() { return 1 };
     t.getColCnt = function() { return colCnt };
     t.getColWidth = function() { return colWidth };
-    t.getSlotHeight = function() { return slotHeight };
+	t.getGranularityHeight = function() { return granularityHeight };
+	t.getGranularityMinutes = function() { return granularityMinutes };
     t.defaultSelectionEnd = defaultSelectionEnd;
     t.renderDayOverlay = renderDayOverlay;
     t.renderSelection = renderSelection;
@@ -111,13 +112,18 @@ function ResourceView(element, calendar, viewName) {
     var slotHeight; // TODO: what if slotHeight changes? (see issue 650)
     var savedScrollTop;
 	
+	var granularityMinutes;
+	var granularityRatio; // ratio of number of "selection" slots to normal slots. (ex: 1, 2, 4)
+	var granularityHeight; // holds the pixel hight of a "selection" slot
+
     var colCnt;
     var slotCnt;
     var coordinateGrid;
     var hoverListener;
     var colContentPositions;
     var slotTopCache = {};
-	
+	var savedScrollTop;
+
     var tm;
     var firstDay;
     var nwe;            // no weekends (int)
@@ -125,6 +131,9 @@ function ResourceView(element, calendar, viewName) {
     var minMinute, maxMinute;
     var colFormat;
     var resources = t.resources;
+    var showWeekNumbers;
+    var weekNumberTitle;
+    var weekNumberFormat;
     
     
     
@@ -163,6 +172,18 @@ function ResourceView(element, calendar, viewName) {
         minMinute = parseTime(opt('minTime'));
         maxMinute = parseTime(opt('maxTime'));
         colFormat = opt('columnFormat');
+
+        // week # options. (TODO: bad, logic also in other views)
+        showWeekNumbers = opt('weekNumbers');
+        weekNumberTitle = opt('weekNumberTitle');
+        if (opt('weekNumberCalculation') != 'iso') {
+            weekNumberFormat = "w";
+        }
+        else {
+            weekNumberFormat = "W";
+        }
+
+        granularityMinutes = opt('granularityMinutes') || opt('slotMinutes');
     }
 	
 	
@@ -180,8 +201,15 @@ function ResourceView(element, calendar, viewName) {
         s =
         "<table style='width:100%' class='fc-agenda-days fc-border-separate' cellspacing='0'>" +
         "<thead>" +
-        "<tr>" +
-        "<th class='fc-agenda-axis " + headerClass + "'>&nbsp;</th>";
+        "<tr>";
+
+        if (showWeekNumbers) {
+            s += "<th class='fc-agenda-axis fc-week-number " + headerClass + "'/>";
+        }
+        else {
+            s += "<th class='fc-agenda-axis " + headerClass + "'>&nbsp;</th>";
+        }
+
         var days = Math.ceil(colCnt / resources.length);
         for (i=0; i<days; i++) {
             s +=
@@ -326,6 +354,18 @@ function ResourceView(element, calendar, viewName) {
         var bodyCell;
         var date;
         var today = clearTime(new Date());
+
+        if (showWeekNumbers) {
+            var weekText = formatDate(colDate(0), weekNumberFormat);
+            if (rtl) {
+                weekText = weekText + weekNumberTitle;
+            }
+            else {
+                weekText = weekNumberTitle + weekText;
+            }
+            dayHead.find('.fc-week-number').text(weekText);
+        }
+
         for (i=0; i<colCnt; i++) {
             date = resourceDate(i);
             if ((i % resources.length) === 0) {
@@ -371,6 +411,9 @@ function ResourceView(element, calendar, viewName) {
 		
         slotHeight = slotTableFirstInner.height() + 1; // +1 for border
 		
+		granularityRatio = opt('slotMinutes') / granularityMinutes;
+		granularityHeight = slotHeight / granularityRatio;
+
         if (dateChanged) {
             resetScroll();
         }
@@ -546,10 +589,10 @@ function ResourceView(element, calendar, viewName) {
         function constrain(n) {
             return Math.max(slotScrollerTop, Math.min(slotScrollerBottom, n));
         }
-        for (var i=0; i<slotCnt; i++) {
+		for (var i=0; i<slotCnt*granularityRatio; i++) { // adapt slot count to increased/decreased selection slot count
             rows.push([
-                constrain(slotTableTop + slotHeight*i),
-                constrain(slotTableTop + slotHeight*(i+1))
+				constrain(slotTableTop + granularityHeight*i),
+				constrain(slotTableTop + granularityHeight*(i+1))
                 ]);
         }
     });
@@ -590,7 +633,7 @@ function ResourceView(element, calendar, viewName) {
             slotIndex--;
         }
         if (slotIndex >= 0) {
-            addMinutes(d, minMinute + slotIndex * opt('slotMinutes'));
+			addMinutes(d, minMinute + slotIndex * granularityMinutes);
         }
         return d;
     }
@@ -793,9 +836,9 @@ function ResourceView(element, calendar, viewName) {
                     var d2 = cellDate(cell);
                     dates = [
                     d1,
-                    addMinutes(cloneDate(d1), opt('slotMinutes')),
+						addMinutes(cloneDate(d1), granularityMinutes), // calculate minutes depending on selection slot minutes
                     d2,
-                    addMinutes(cloneDate(d2), opt('slotMinutes'))
+						addMinutes(cloneDate(d2), granularityMinutes)
                     ].sort(cmp);
                     renderSlotSelection(dates[0], dates[3], resource);
                 }else{
