@@ -84,35 +84,73 @@ function ResourceEventRenderer() {
 	
     
     function compileDaySegs(events) {
-        var levels = stackSegs(sliceSegs(events, $.map(events, exclEndDay), t.visStart, t.visEnd)),
-        i, levelCnt=levels.length, level,
-        j, seg,
-        segs=[];
-        for (i=0; i<levelCnt; i++) {
-            level = levels[i];
-            for (j=0; j<level.length; j++) {
-                seg = level[j];
-                seg.row = 0;
-                seg.level = i; // not needed anymore
-                segs.push(seg);
+//        var levels = stackSegs(sliceSegs(events, $.map(events, exclEndDay), t.visStart, t.visEnd)),
+//        i, levelCnt=levels.length, level,
+//        j, seg,
+//        segs=[];
+//        for (i=0; i<levelCnt; i++) {
+//            level = levels[i];
+//            for (j=0; j<level.length; j++) {
+//                seg = level[j];
+//                seg.row = 0;
+//                seg.level = i; // not needed anymore
+//                segs.push(seg);
+//            }
+//        }
+//        return segs;
+        var colCnt = getColCnt(),
+            date, d,
+            i, col,
+            j, level,
+            k, seg,
+            segs=[];
+        for (i=0; i<colCnt; i++) {
+            // only events for this day
+            date = resourceDate(i);
+            // only events for this resource
+            var ri = Math.ceil(i % resources.length);
+            var resourceEvents = eventsForResource(resources[ri], events);
+
+            col = stackSegs(sliceSegs(resourceEvents, $.map(resourceEvents, slotEventEnd), date, addDays(cloneDate(date), 1)));
+            countForwardSegs(col);
+            for (j=0; j<col.length; j++) {
+                level = col[j];
+                for (k=0; k<level.length; k++) {
+                    seg = level[k];
+                    seg.row = 0;
+                    seg.col = i;
+                    seg.level = j;
+                    segs.push(seg);
+                }
             }
         }
         return segs;
     }
-	
+
+
+    function resourceDate(col) {
+        var delta = Math.floor(col / resources.length);
+        var date = cloneDate(t.visStart);
+        return addDays(date, delta);
+    }
+
     
     function compileSlotSegs(events) {
         var colCnt = getColCnt(),
         minMinute = getMinMinute(),
         maxMinute = getMaxMinute(),
-        d = addMinutes(cloneDate(t.visStart), minMinute),
+        date, d,
         i, col,
         j, level,
         k, seg,
         segs=[];
         for (i=0; i<colCnt; i++) {
-            // only events for this resource        
-            var resourceEvents = eventsForResource(resources[i], events);
+            // only events for this day
+            date = resourceDate(i);
+            d = addMinutes(date, minMinute);
+            // only events for this resource
+            var ri = Math.ceil(i % resources.length);
+            var resourceEvents = eventsForResource(resources[ri], events);
                     
             col = stackSegs(sliceSegs(resourceEvents, $.map(resourceEvents, slotEventEnd), d, addMinutes(cloneDate(d), maxMinute-minMinute)));
             countForwardSegs(col);

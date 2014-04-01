@@ -84,6 +84,7 @@ function ResourceView(element, calendar, viewName) {
     var dayTable;
     var dayHead;
     var dayHeadCells;
+    var resourceHeadCells;
     var dayBody;
     var dayBodyCells;
     var dayBodyCellInners;
@@ -134,8 +135,9 @@ function ResourceView(element, calendar, viewName) {
     disableTextSelection(element.addClass('fc-agenda'));
 
 	
-    function renderResource() {
-        colCnt = resources.length;
+    function renderResource(days) {
+        if(days==null) days = 1;
+        colCnt = resources.length * days;
         updateOptions();
         if (!dayTable) {
             buildSkeleton();
@@ -180,6 +182,16 @@ function ResourceView(element, calendar, viewName) {
         "<thead>" +
         "<tr>" +
         "<th class='fc-agenda-axis " + headerClass + "'>&nbsp;</th>";
+        var days = Math.ceil(colCnt / resources.length);
+        for (i=0; i<days; i++) {
+            s +=
+            "<th class='fc- fc-col" + i + ' ' + headerClass + "' colspan=" + resources.length + "/>"; // fc- needed for setDayID
+        }
+        s +=
+        "<th class='fc-agenda-gutter " + headerClass + "'>&nbsp;</th>" +
+        "</tr>" +
+        "<tr>" +
+        "<th class='fc-agenda-axis " + headerClass + "'>&nbsp;</th>";
         for (i=0; i<colCnt; i++) {
             s +=
             "<th class='fc- fc-col" + i + ' ' + headerClass + "'/>"; // fc- needed for setDayID
@@ -208,7 +220,8 @@ function ResourceView(element, calendar, viewName) {
         "</table>";
         dayTable = $(s).appendTo(element);
         dayHead = dayTable.find('thead');
-        dayHeadCells = dayHead.find('th').slice(1, -1);
+        dayHeadCells = dayHead.find('tr:eq(0) th').slice(1, -1);
+        resourceHeadCells = dayHead.find('tr:eq(1) th').slice(1, -1);
         dayBody = dayTable.find('tbody');
         dayBodyCells = dayBody.find('td').slice(0, -1);
         dayBodyCellInners = dayBodyCells.find('div.fc-day-content div');
@@ -315,9 +328,14 @@ function ResourceView(element, calendar, viewName) {
         var today = clearTime(new Date());
         for (i=0; i<colCnt; i++) {
             date = resourceDate(i);
-            headCell = dayHeadCells.eq(i);
-            headCell.html(resources[i].name);
-            headCell.attr("id", resources[i].id);
+            if ((i % resources.length) === 0) {
+                var dayCell = dayHeadCells.eq(Math.ceil(i / resources.length));
+                dayCell.html(formatDate(date, colFormat));
+            }
+            headCell = resourceHeadCells.eq(i);
+            var ri = i % resources.length;
+            headCell.html(resources[ri].name);
+            headCell.attr("id", resources[ri].id);
             bodyCell = dayBodyCells.eq(i);
             if (+date == +today) {
                 bodyCell.addClass(tm + '-state-highlight fc-today');
@@ -579,7 +597,9 @@ function ResourceView(element, calendar, viewName) {
        
        
     function resourceDate(col) {
-        return cloneDate(t.visStart);
+        var delta = Math.floor(col / resources.length);
+        var date = cloneDate(t.visStart);
+        return addDays(date, delta);
     }
 	
     
