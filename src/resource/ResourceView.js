@@ -29,12 +29,12 @@ function ResourceView(element, calendar, viewName) {
     t.renderResource = renderResource;
     t.setWidth = setWidth;
     t.setHeight = setHeight;
-    t.beforeHide = beforeHide;
-    t.afterShow = afterShow;
+	t.afterRender = afterRender;
     t.defaultEventEnd = defaultEventEnd;
     t.timePosition = timePosition;
 	t.getIsCellAllDay = getIsCellAllDay;
     t.allDayRow = getAllDayRow;
+	t.getCoordinateGrid = function() { return coordinateGrid }; // specifically for AgendaEventRenderer
     t.getHoverListener = function() { return hoverListener };
 	t.colLeft = colLeft;
 	t.colRight = colRight;
@@ -75,7 +75,6 @@ function ResourceView(element, calendar, viewName) {
 
     var opt = t.opt;
     var trigger = t.trigger;
-    var clearEvents = t.clearEvents;
     var renderOverlay = t.renderOverlay;
     var clearOverlays = t.clearOverlays;
     var reportSelection = t.reportSelection;
@@ -130,7 +129,6 @@ function ResourceView(element, calendar, viewName) {
 	var colPositions;
     var colContentPositions;
     var slotTopCache = {};
-	var savedScrollTop;
 
     var tm;
 	var rtl;
@@ -154,11 +152,11 @@ function ResourceView(element, calendar, viewName) {
         if(days==null) days = 1;
         colCnt = resources.length * days;
         updateOptions();
+
         if (!dayTable) {
 			buildSkeleton(); // builds day table, slot area, events containers
         }else{
 			buildDayTable(); // rebuilds day table
-            clearEvents();
         }
     }
 	
@@ -209,7 +207,7 @@ function ResourceView(element, calendar, viewName) {
         if (opt('allDaySlot')) {
 		
             daySegmentContainer =
-            $("<div style='position:absolute;z-index:8;top:0;left:0'/>")
+				$("<div class='fc-event-container' style='position:absolute;z-index:8;top:0;left:0'/>")
             .appendTo(slotLayer);
 		
             s =
@@ -248,7 +246,7 @@ function ResourceView(element, calendar, viewName) {
             .appendTo(slotScroller);
 				
         slotSegmentContainer =
-            $("<div style='position:absolute;z-index:8;top:0;left:0'/>")
+			$("<div class='fc-event-container' style='position:absolute;z-index:8;top:0;left:0'/>")
 				.appendTo(slotContainer);
 		
         s =
@@ -420,6 +418,12 @@ function ResourceView(element, calendar, viewName) {
                     'fc-today'
                 );
             }
+			else if (date < today) {
+				classNames.push('fc-past');
+			}
+			else {
+				classNames.push('fc-future');
+			}
 
             cellHTML =
                 "<td class='" + classNames.join(' ') + "'>" +
@@ -451,7 +455,7 @@ function ResourceView(element, calendar, viewName) {
 	-----------------------------------------------------------------------*/
 
 
-    function setHeight(height, dateChanged) {
+	function setHeight(height) {
         if (height === undefined) {
             height = viewHeight;
         }
@@ -476,10 +480,6 @@ function ResourceView(element, calendar, viewName) {
 		
 		snapRatio = opt('slotMinutes') / snapMinutes;
 		snapHeight = slotHeight / snapRatio;
-
-        if (dateChanged) {
-            resetScroll();
-        }
     }
 	
 
@@ -548,17 +548,12 @@ function ResourceView(element, calendar, viewName) {
     }
 	
 	
-    function beforeHide() {
-        savedScrollTop = slotScroller.scrollTop();
+	function afterRender() { // after the view has been freshly rendered and sized
+		resetScroll();
     }
 	
-	
-    function afterShow() {
-        slotScroller.scrollTop(savedScrollTop);
-    }
-	
-	
-	
+
+
     /* Slot/Day clicking and binding
 	-----------------------------------------------------------------------*/
 	
@@ -772,7 +767,11 @@ function ResourceView(element, calendar, viewName) {
         slotI = Math.floor(minutes / slotMinutes),
         slotTop = slotTopCache[slotI];
         if (slotTop === undefined) {
-            slotTop = slotTopCache[slotI] = slotTable.find('tr:eq(' + slotI + ') td div')[0].offsetTop; //.position().top; // need this optimization???
+			slotTop = slotTopCache[slotI] =
+				slotTable.find('tr').eq(slotI).find('td div')[0].offsetTop;
+				// .eq() is faster than ":eq()" selector
+				// [0].offsetTop is faster than .position().top (do we really need this optimization?)
+				// a better optimization would be to cache all these divs
         }
         return Math.max(0, Math.round(
             slotTop - 1 + slotHeight * ((minutes % slotMinutes) / slotMinutes)
@@ -836,7 +835,6 @@ function ResourceView(element, calendar, viewName) {
                         var helperRes = helperOption(startDate, endDate);
                         if (helperRes) {
                             rect.position = 'absolute';
-                            rect.zIndex = 8;
                             selectionHelper = $(helperRes)
                             .css(rect)
 								.appendTo(slotContainer);
@@ -903,7 +901,10 @@ function ResourceView(element, calendar, viewName) {
             }, ev);
             $(document).one('mouseup', function(ev) {
                 hoverListener.stop();
-                if (dates && resource) {
+				if (dates) {
+					if (+dates[0] == +dates[1]) {
+						reportDayClick(dates[0], false, ev);
+					}
                     reportSelection(dates[0], dates[3], false, ev, resource.id);
                 }
             });
