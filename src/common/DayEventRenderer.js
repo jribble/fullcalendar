@@ -113,7 +113,7 @@ function DayEventRenderer() {
 		// If `doAppend`==true, uses a temporary container.
 		var renderContainer = doAppend ? $("<div/>") : finalContainer;
 
-		var segments = buildSegments(events);
+		var segments = events[0] != null && events[0].event != null ? events : buildSegments(events);
 		var html;
 		var elements;
 
