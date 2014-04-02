@@ -1,151 +1,151 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE html>
 <html>
-    <head>
-        <link href='../build/out/fullcalendar.css' rel='stylesheet' />
-        <link href='../build/out/fullcalendar.print.css' rel='stylesheet' media='print' />
-        <script src='../build/out/jquery.js'></script>
-        <script src='../build/out/jquery-ui.js'></script>
-        <script src='../build/out/fullcalendar.js'></script>
-        <script type='text/javascript'>
+<head>
+    <link href='../build/out/fullcalendar.css' rel='stylesheet' />
+    <link href='../build/out/fullcalendar.print.css' rel='stylesheet' media='print' />
+    <script src='../lib/jquery/jquery.js'></script>
+    <script src='../lib/jquery-ui/ui/jquery-ui.js'></script>
+    <script src='../build/out/fullcalendar.js'></script>
+    <script type='text/javascript'>
 
-            $(document).ready(function() {
-	
-                var date = new Date();
-                var d = date.getDate();
-                var m = date.getMonth();
-                var y = date.getFullYear();
-		
-                var calendar = $('#calendar').fullCalendar({
-                    header: {
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: 'resourceDay'
+        $(document).ready(function() {
+
+            var date = new Date();
+            var d = date.getDate();
+            var m = date.getMonth();
+            var y = date.getFullYear();
+
+            var calendar = $('#calendar').fullCalendar({
+                header: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'resourceDay'
+                },
+                titleFormat: 'ddd, MMM dd, yyyy',
+                defaultView: 'resourceMultiDay',
+                selectable: true,
+                selectHelper: true,
+                select: function(start, end, allDay, event, resourceId) {
+                    var title = prompt('Event Title:');
+                    if (title) {
+                        console.log("@@ adding event " + title + ", start " + start + ", end " + end + ", allDay " + allDay + ", resource " + resourceId);
+                        calendar.fullCalendar('renderEvent',
+                        {
+                            title: title,
+                            start: start,
+                            end: end,
+                            allDay: allDay,
+                            resourceId: resourceId
+                        },
+                        true // make the event "stick"
+                    );
+                    }
+                    calendar.fullCalendar('unselect');
+                },
+                eventResize: function(event, dayDelta, minuteDelta) {
+                    console.log("@@ resize event " + event.title + ", start " + event.start + ", end " + event.end + ", resource " + event.resourceId);
+                },
+                eventDrop: function( event, dayDelta, minuteDelta, allDay) {
+                    console.log("@@ drag/drop event " + event.title + ", start " + event.start + ", end " + event.end + ", resource " + event.resourceId);
+                },
+                editable: true,
+                resources: [
+                    {
+                        name: 'Resource 1',
+                        id:	'resource1'
                     },
-                    titleFormat: 'ddd, MMM dd, yyyy',
-                    defaultView: 'resourceMultiDay',
-                    selectable: true,
-                    selectHelper: true,
-                    select: function(start, end, allDay, event, resourceId) {
-                        var title = prompt('Event Title:');
-                        if (title) {
-                            console.log("@@ adding event " + title + ", start " + start + ", end " + end + ", allDay " + allDay + ", resource " + resourceId);
-                            calendar.fullCalendar('renderEvent',
-                            {
-                                title: title,
-                                start: start,
-                                end: end,
-                                allDay: allDay,
-                                resourceId: resourceId
-                            },
-                            true // make the event "stick"
-                        );
-                        }
-                        calendar.fullCalendar('unselect');
+                    {
+                        name: 'Resource 2',
+                        id:	'resource2'
                     },
-                    eventResize: function(event, dayDelta, minuteDelta) {
-                        console.log("@@ resize event " + event.title + ", start " + event.start + ", end " + event.end + ", resource " + event.resourceId);
+                    {
+                        name: 'Resource 3',
+                        id:	'resource3'
+                    }
+                ],
+                events: [
+                    {
+                        title: '2 Day Event',
+                        start: new Date(y, m, d - 1),
+                        end: new Date(y, m, d + 1),
+                        resourceId: 'resource1'
                     },
-                    eventDrop: function( event, dayDelta, minuteDelta, allDay) {
-                        console.log("@@ drag/drop event " + event.title + ", start " + event.start + ", end " + event.end + ", resource " + event.resourceId);
+                    {
+                        title: 'Short Event 1',
+                        start: new Date(y, m, d, 11, 30),
+                        end: new Date(y, m, d, 13, 00),
+                        allDay: false,
+                        resourceId: 'resource1'
                     },
-                    editable: true,
-                    resources: [
-                        {
-                            name: 'Resource 1',
-                            id:	'resource1'
-                        },
-                        {
-                            name: 'Resource 2',
-                            id:	'resource2'
-                        },
-                        {
-                            name: 'Resource 3',
-                            id:	'resource3'
-                        }
-                    ],
-                    events: [
-                        {
-                            title: '2 Day Event',
-                            start: new Date(y, m, d - 1),
-                            end: new Date(y, m, d + 1),
-                            resourceId: 'resource1'
-                        },
-                        {
-                            title: 'Short Event 1',
-                            start: new Date(y, m, d, 11, 30),
-                            end: new Date(y, m, d, 13, 00),
-                            allDay: false,
-                            resourceId: 'resource1'
-                        },
-                        {
-                            title: 'Short Event 2',
-                            start: new Date(y, m, d + 1, 14, 00),
-                            end: new Date(y, m, d + 1, 15, 00),
-                            allDay: false,
-                            resourceId: 'resource1'
-                        },
-                        {
-                            title: 'Cross Day Event',
-                            start: new Date(y, m, d, 14, 00),
-                            end: new Date(y, m, d + 1, 12, 30),
-                            allDay: false,
-                            resourceId: 'resource2'
-                        },
-                        {
-                            title: 'All Day Event',
-                            start: new Date(y, m, d - 2),
-                            end: new Date(y, m, d - 1),
-                            resourceId: 'resource2'
-                        },
-                        {
-                            title: '4 Day Event',
-                            start: new Date(y, m, d - 2),
-                            end: new Date(y, m, d + 2),
-                            resourceId: 'resource3'
-                        },
-                        {
-                            title: 'Lunch',
-                            start: new Date(y, m, d, 12, 0),
-                            end: new Date(y, m, d, 14, 0),
-                            allDay: false,
-                            resourceId: 'resource2'
-                        },
-                        {
-                            title: 'All Day Event 3',
-                            start: new Date(y, m, d),
-                            resourceId: 'resource3'
-                        },
-                        {
-                            title: 'Click for Google',
-                            start: new Date(y, m, d, 16, 0),
-                            end: new Date(y, m, d, 16, 30),
-                            allDay: false,
-                            url: 'http://google.com/',
-                            resourceId: 'resource3'
-                        }
-                    ]
-                });
-		
+                    {
+                        title: 'Short Event 2',
+                        start: new Date(y, m, d + 1, 14, 00),
+                        end: new Date(y, m, d + 1, 15, 00),
+                        allDay: false,
+                        resourceId: 'resource1'
+                    },
+                    {
+                        title: 'Cross Day Event',
+                        start: new Date(y, m, d, 14, 00),
+                        end: new Date(y, m, d + 1, 12, 30),
+                        allDay: false,
+                        resourceId: 'resource2'
+                    },
+                    {
+                        title: 'All Day Event',
+                        start: new Date(y, m, d - 2),
+                        end: new Date(y, m, d - 1),
+                        resourceId: 'resource2'
+                    },
+                    {
+                        title: '4 Day Event',
+                        start: new Date(y, m, d - 2),
+                        end: new Date(y, m, d + 2),
+                        resourceId: 'resource3'
+                    },
+                    {
+                        title: 'Lunch',
+                        start: new Date(y, m, d, 12, 0),
+                        end: new Date(y, m, d, 14, 0),
+                        allDay: false,
+                        resourceId: 'resource2'
+                    },
+                    {
+                        title: 'All Day Event 3',
+                        start: new Date(y, m, d),
+                        resourceId: 'resource3'
+                    },
+                    {
+                        title: 'Click for Google',
+                        start: new Date(y, m, d, 16, 0),
+                        end: new Date(y, m, d, 16, 30),
+                        allDay: false,
+                        url: 'http://google.com/',
+                        resourceId: 'resource3'
+                    }
+                ]
             });
 
-        </script>
-        <style type='text/css'>
+        });
 
-            body {
-                margin-top: 40px;
-                text-align: center;
-                font-size: 14px;
-                font-family: "Lucida Grande",Helvetica,Arial,Verdana,sans-serif;
-            }
+    </script>
+    <style type='text/css'>
 
-            #calendar {
-                width: 100%;
-                margin: 0 auto;
-            }
+        body {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 14px;
+            font-family: "Lucida Grande",Helvetica,Arial,Verdana,sans-serif;
+        }
 
-        </style>
-    </head>
-    <body>
-        <div id='calendar'></div>
-    </body>
+        #calendar {
+            width: 100%;
+            margin: 0 auto;
+        }
+
+    </style>
+</head>
+<body>
+    <div id='calendar'></div>
+</body>
 </html>
