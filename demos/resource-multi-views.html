@@ -15,11 +15,16 @@
             var m = date.getMonth();
             var y = date.getFullYear();
 
-            var calendar = $('#calendar').fullCalendar({
+            var div = $('#calendar');
+
+            var calendar = div.fullCalendar({
                 header: {
                     left: 'prev,next today',
                     center: 'title',
                     right: 'resourceDay'
+                },
+                height: function(){
+                    return div.outerHeight();
                 },
                 titleFormat: 'ddd, MMM dd, yyyy',
                 defaultView: 'resourceMultiDay',
@@ -131,8 +136,13 @@
     </script>
     <style type='text/css'>
 
+        body,html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            margin-top: 40px;
             text-align: center;
             font-size: 14px;
             font-family: "Lucida Grande",Helvetica,Arial,Verdana,sans-serif;
@@ -140,7 +150,7 @@
 
         #calendar {
             width: 100%;
-            margin: 0 auto;
+            height: 100%;
         }
 
     </style>

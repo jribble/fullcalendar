@@ -240,13 +240,26 @@ function Calendar(element, options, eventSources, resourceSources) {
 	
 	function calcSize() { // assumes elementVisible
 		if (options.contentHeight) {
-			suggestedViewHeight = options.contentHeight;
+			suggestedViewHeight = function(){return options.contentHeight;};
 		}
 		else if (options.height) {
-			suggestedViewHeight = options.height - (headerElement ? headerElement.height() : 0) - vsides(content);
+            if(typeof(options.height) == "function" ) {
+                suggestedViewHeight = function(){
+                    var headerHeight = (headerElement ? headerElement.height() : 0);
+                    var margins = vsides(content);
+                    var suggHeight = options.height();
+                    return suggHeight - headerHeight - margins;
+                };
+            } else {
+                suggestedViewHeight = function(){
+                    var headerHeight = (headerElement ? headerElement.height() : 0);
+                    var margins = vsides(content);
+                    return options.height - headerHeight - margins;
+                };
+            }
 		}
 		else {
-			suggestedViewHeight = Math.round(content.width() / Math.max(options.aspectRatio, .5));
+			suggestedViewHeight = function(){Math.round(content.width() / Math.max(options.aspectRatio, .5));};
 		}
 	}
 	
@@ -260,7 +273,7 @@ function Calendar(element, options, eventSources, resourceSources) {
 		}
 
 		ignoreWindowResize++;
-		currentView.setHeight(suggestedViewHeight);
+		currentView.setHeight(suggestedViewHeight());
 		currentView.setWidth(content.width());
 		ignoreWindowResize--;
 
