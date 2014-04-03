@@ -240,7 +240,9 @@ function Calendar(element, options, eventSources, resourceSources) {
 	
 	function calcSize() { // assumes elementVisible
 		if (options.contentHeight) {
-			suggestedViewHeight = function(){return options.contentHeight;};
+			suggestedViewHeight = function(){
+                return options.contentHeight;
+            };
 		}
 		else if (options.height) {
             if(typeof(options.height) == "function" ) {
@@ -259,7 +261,9 @@ function Calendar(element, options, eventSources, resourceSources) {
             }
 		}
 		else {
-			suggestedViewHeight = function(){Math.round(content.width() / Math.max(options.aspectRatio, .5));};
+			suggestedViewHeight = function(){
+                return Math.round(content.width() / Math.max(options.aspectRatio, .5));
+            };
 		}
 	}
 	
