@@ -89,7 +89,8 @@ function ResourceView(element, calendar, viewName) {
     
     
     // locals
-	
+
+    var dayScroller;
     var dayTable;
     var dayHead;
     var dayHeadCells;
@@ -103,6 +104,7 @@ function ResourceView(element, calendar, viewName) {
     var dayBodyFirstCellStretcher;
     var slotLayer;
     var daySegmentContainer;
+    var allDayScroller;
     var allDayTable;
     var allDayRow;
     var slotScroller;
@@ -114,6 +116,7 @@ function ResourceView(element, calendar, viewName) {
     var viewWidth;
     var viewHeight;
     var axisWidth;
+    var colMinWidth;
     var colWidth;
     var gutterWidth;
     var slotHeight; // TODO: what if slotHeight changes? (see issue 650)
@@ -168,6 +171,7 @@ function ResourceView(element, calendar, viewName) {
         minMinute = parseTime(opt('minTime'));
         maxMinute = parseTime(opt('maxTime'));
         colFormat = opt('columnFormat');
+        colMinWidth = opt('colMinWidth');
 
         // week # options. (TODO: bad, logic also in other views)
         showWeekNumbers = opt('weekNumbers');
@@ -205,10 +209,13 @@ function ResourceView(element, calendar, viewName) {
         .appendTo(element);
 				
         if (opt('allDaySlot')) {
+
+            allDayScroller = $("<div style='width: 100%; overflow-x:hidden;'/>")
+                .appendTo(slotLayer);
 		
             daySegmentContainer =
-				$("<div class='fc-event-container' style='position:absolute;z-index:8;top:0;left:0'/>")
-            .appendTo(slotLayer);
+				$("<div class='fc-event-container' style='position:relative;z-index:8;top:0;left:0'/>")
+            .appendTo(allDayScroller);
 		
             s =
             "<table style='width:100%' class='fc-agenda-allday' cellspacing='0'>" +
@@ -220,7 +227,7 @@ function ResourceView(element, calendar, viewName) {
             "<th class='" + headerClass + " fc-agenda-gutter'>&nbsp;</th>" +
             "</tr>" +
             "</table>";
-            allDayTable = $(s).appendTo(slotLayer);
+            allDayTable = $(s).appendTo(allDayScroller);
             allDayRow = allDayTable.find('tr');
 			
             dayBind(allDayRow.find('td'));
@@ -238,7 +245,7 @@ function ResourceView(element, calendar, viewName) {
         }
 		
         slotScroller =
-            $("<div style='position:absolute;width:100%;overflow-x:hidden;overflow-y:auto'/>")
+            $("<div style='position:absolute;width:100%;overflow-x:auto;overflow-y:auto'/>")
                 .appendTo(slotLayer);
 				
 		slotContainer =
@@ -276,6 +283,11 @@ function ResourceView(element, calendar, viewName) {
 		slotTable = $(s).appendTo(slotContainer);
 		
         slotBind(slotTable.find('td'));
+
+        slotScroller.scroll(function() {
+            dayScroller.scrollLeft(slotScroller.scrollLeft());
+            if(allDayScroller) allDayScroller.scrollLeft(slotScroller.scrollLeft());
+        });
     }
 
 
@@ -287,10 +299,14 @@ function ResourceView(element, calendar, viewName) {
     function buildDayTable() {
         var html = buildDayTableHTML();
 
-        if (dayTable) {
-            dayTable.remove();
+        if (dayScroller) {
+            dayScroller.remove();
         }
-        dayTable = $(html).appendTo(element);
+
+        dayScroller = $("<div style='width: 100%; overflow-x:hidden;'/>")
+            .appendTo(element);
+
+        dayTable = $(html).appendTo(dayScroller);
 
         dayHead = dayTable.find('thead');
         dayHeadCells = dayHead.find('tr:eq(0) th').slice(1, -1); // exclude gutter
@@ -528,7 +544,17 @@ function ResourceView(element, calendar, viewName) {
         }
 		
         colWidth = Math.floor((slotTableWidth - axisWidth) / colCnt);
+        //TODO: Make this configurable
+        if(colMinWidth && colWidth < colMinWidth) colWidth = colMinWidth;
         setOuterWidth(resourceHeadCells.slice(0, -1), colWidth);
+
+        var tableWidth = (colWidth * colCnt) + axisWidth + gutterWidth;
+        dayTable.width(tableWidth);
+        if(allDayTable) allDayTable.width(tableWidth);
+        if(daySegmentContainer) daySegmentContainer.width(tableWidth);
+
+        var slotContainerWidth = tableWidth - gutterWidth;
+        slotContainer.width(slotContainerWidth);
     }
 	
 
