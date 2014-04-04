@@ -861,22 +861,22 @@ function ResourceView(element, calendar, viewName) {
 	
 	
 	function colLeft(col) {
-		return colPositions.left(col);
+		return colPositions.left(col) - axisWidth;
 	}
 
 
     function colContentLeft(col) {
-        return colContentPositions.left(col);
+        return colContentPositions.left(col) - axisWidth;
     }
 	
 	
 	function colRight(col) {
-		return colPositions.right(col);
+		return colPositions.right(col) - axisWidth;
 	}
 
 
     function colContentRight(col) {
-        return colContentPositions.right(col);
+        return colContentPositions.right(col) - axisWidth;
     }
 	
 	
