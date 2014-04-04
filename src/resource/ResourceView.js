@@ -46,7 +46,7 @@ function ResourceView(element, calendar, viewName) {
     t.getMinMinute = function() { return minMinute };
     t.getMaxMinute = function() { return maxMinute };
 	t.getSlotContainer = function() { return slotContainer };
-    t.getRowCnt = function() { return 1 };
+    t.getRowCnt = function() { if(allDayAxis) return 2; else return 1; };
     t.getColCnt = function() { return colCnt };
     t.getColWidth = function() { return colWidth };
 	t.getSnapHeight = function() { return snapHeight };
@@ -90,8 +90,10 @@ function ResourceView(element, calendar, viewName) {
     
     // locals
 
+    var axisTable;
     var dayScroller;
     var dayTable;
+    var gutterTable;
     var dayHead;
     var dayHeadCells;
     var resourceHead;
@@ -104,9 +106,13 @@ function ResourceView(element, calendar, viewName) {
     var dayBodyFirstCellStretcher;
     var slotLayer;
     var daySegmentContainer;
+    var allDayAxis;
     var allDayScroller;
     var allDayTable;
+    var allDayGutter;
     var allDayRow;
+    var axisSlotTable;
+    var axisScroller;
     var slotScroller;
 	var slotContainer;
     var slotSegmentContainer;
@@ -204,13 +210,23 @@ function ResourceView(element, calendar, viewName) {
 		
 		buildDayTable();
 
+        $("<div style='clear:both;'/>").appendTo(element);
+
         slotLayer =
         $("<div style='position:absolute;z-index:2;left:0;width:100%'/>")
         .appendTo(element);
 				
         if (opt('allDaySlot')) {
 
-            allDayScroller = $("<div style='width: 100%; overflow-x:hidden;'/>")
+            s =
+                "<table style='width:0px;float:left;' class='fc-agenda-allday' cellspacing='0'>" +
+                "<tr>" +
+                "<th class='" + headerClass + " fc-agenda-axis'><div class='fc-day-content' style='padding:0;'><div>" + opt('allDayText') + "</div></div></th>" +
+                "</tr>" +
+                "</table>";
+            allDayAxis = $(s).appendTo(slotLayer);
+
+            allDayScroller = $("<div style='width:100%; float:left; overflow-x:hidden;'/>")
                 .appendTo(slotLayer);
 		
             daySegmentContainer =
@@ -218,9 +234,8 @@ function ResourceView(element, calendar, viewName) {
             .appendTo(allDayScroller);
 		
             s =
-            "<table style='width:100%' class='fc-agenda-allday' cellspacing='0'>" +
+            "<table style='width:100%;' class='fc-agenda-allday' cellspacing='0'>" +
             "<tr>" +
-            "<th class='" + headerClass + " fc-agenda-axis'>" + opt('allDayText') + "</th>" +
             "<td>" +
             "<div class='fc-day-content'><div style='position:relative'/></div>" +
             "</td>" +
@@ -232,8 +247,17 @@ function ResourceView(element, calendar, viewName) {
 			
             dayBind(allDayRow.find('td'));
 
+
+            s =
+                "<table style='width:0px;float:left;' class='fc-agenda-allday' cellspacing='0'>" +
+                "<tr>" +
+                "<th class='" + headerClass + " fc-agenda-gutter'><div class='fc-day-content' style='padding:0;'><div>&nbsp;</div></div></th>" +
+                "</tr>" +
+                "</table>";
+            allDayGutter = $(s).appendTo(slotLayer);
+
             slotLayer.append(
-                "<div class='fc-agenda-divider " + headerClass + "'>" +
+                "<div class='fc-agenda-divider " + headerClass + "' style='clear:both;'>" +
                 "<div class='fc-agenda-divider-inner'/>" +
                 "</div>"
                 );
@@ -243,10 +267,42 @@ function ResourceView(element, calendar, viewName) {
             daySegmentContainer = $([]); // in jQuery 1.4, we can just do $()
 		
         }
+
+        axisScroller =
+            $("<div class='fc-axis-scroller' style='position:relative;width:0px;float:left;overflow-y:hidden'/>")
+                .appendTo(slotLayer);
+
+        s =
+            "<table class='fc-agenda-slots' style='width:0px;float:left;' cellspacing='0'>" +
+            "<tbody>";
+        d = zeroDate();
+        maxd = addMinutes(cloneDate(d), maxMinute);
+        addMinutes(d, minMinute);
+        slotCnt = 0;
+        for (i=0; d < maxd; i++) {
+            minutes = d.getMinutes();
+            s +=
+                "<tr class='fc-slot" + i + ' ' + (!minutes ? '' : 'fc-minor') + "'>" +
+                "<th class='fc-agenda-axis " + headerClass + "'>" +
+                "<div style='position:relative;'>" +
+                ((!slotNormal || !minutes) ? formatDate(d, opt('axisFormat')) : '&nbsp;') +
+                "</div>" +
+                "</th>" +
+                "</tr>";
+            addMinutes(d, opt('slotMinutes'));
+            slotCnt++;
+        }
+        s +=
+            "</tbody>" +
+            "</table>";
+
+        axisSlotTable = $(s).appendTo(axisScroller);
 		
         slotScroller =
-            $("<div style='position:absolute;width:100%;overflow-x:auto;overflow-y:auto'/>")
+            $("<div style='position:relative;width:100%;float:left;overflow-x:auto;overflow-y:auto'/>")
                 .appendTo(slotLayer);
+
+        $("<div style='clear:both;'/>").appendTo(slotLayer);
 				
 		slotContainer =
             $("<div style='position:relative;width:100%;overflow:hidden'/>")
@@ -267,9 +323,6 @@ function ResourceView(element, calendar, viewName) {
             minutes = d.getMinutes();
             s +=
                 "<tr class='fc-slot" + i + ' ' + (!minutes ? '' : 'fc-minor') + "'>" +
-                "<th class='fc-agenda-axis " + headerClass + "'>" +
-                ((!slotNormal || !minutes) ? formatDate(d, opt('axisFormat')) : '&nbsp;') +
-                "</th>" +
                 "<td class='" + contentClass + "'>" +
                 "<div style='position:relative'>&nbsp;</div>" +
                 "</td>" +
@@ -286,6 +339,10 @@ function ResourceView(element, calendar, viewName) {
 
         slotScroller.scroll(function() {
             dayScroller.scrollLeft(slotScroller.scrollLeft());
+            axisScroller.scrollTop(slotScroller.scrollTop());
+//            var slotOffset = slotTable.offset();
+//            slotOffset.left = 0;
+//            slotTable.offset(slotOffset);
             if(allDayScroller) allDayScroller.scrollLeft(slotScroller.scrollLeft());
         });
     }
@@ -297,16 +354,22 @@ function ResourceView(element, calendar, viewName) {
 
 
     function buildDayTable() {
-        var html = buildDayTableHTML();
+        var html = buildDayAxisHTML();
+
+        axisTable = $(html).appendTo(element);
 
         if (dayScroller) {
             dayScroller.remove();
         }
 
-        dayScroller = $("<div style='width: 100%; overflow-x:hidden;'/>")
+        dayScroller = $("<div style='width: 100%; float:left; overflow-x:hidden;'/>")
             .appendTo(element);
 
+        html = buildDayTableHTML();
         dayTable = $(html).appendTo(dayScroller);
+
+        html = buildDayGutterHTML();
+        gutterTable = $(html).appendTo(element);
 
         dayHead = dayTable.find('thead');
         dayHeadCells = dayHead.find('tr:eq(0) th').slice(1, -1); // exclude gutter
@@ -329,30 +392,29 @@ function ResourceView(element, calendar, viewName) {
     }
 
 
-    function buildDayTableHTML() {
+    function buildDayAxisHTML() {
         var html =
-            "<table style='width:100%' class='fc-agenda-days fc-border-separate' cellspacing='0'>" +
-            buildDayTableHeadHTML() +
-            buildDayTableBodyHTML() +
+            "<table style='width:100%; float:left;' class='fc-agenda-days fc-agenda-days-axis fc-border-separate' cellspacing='0'>" +
+            buildDayAxisHeadHTML() +
+            buildDayAxisBodyHTML() +
             "</table>";
 
         return html;
     }
 
 
-    function buildDayTableHeadHTML() {
+    function buildDayAxisHeadHTML() {
         var headerClass = tm + "-widget-header";
         var date;
         var html = '';
         var weekText;
-        var col;
 
         html +=
             "<thead>" +
             "<tr>";
 
         if (showWeekNumbers) {
-			date = cellToDate(0, 0);
+            date = cellToDate(0, 0);
             weekText = formatDate(date, weekNumberFormat);
             if (rtl) {
                 weekText += weekNumberTitle;
@@ -368,6 +430,51 @@ function ResourceView(element, calendar, viewName) {
         else {
             html += "<th class='fc-agenda-axis " + headerClass + "'>&nbsp;</th>";
         }
+        html +=
+            "</tr>" +
+            "</thead>";
+
+        return html;
+    }
+
+
+    function buildDayAxisBodyHTML() {
+        var headerClass = tm + "-widget-header"; // TODO: make these when updateOptions() called
+        var html = '';
+
+        html +=
+            "<tbody>" +
+            "<tr>" +
+            "<th class='fc-agenda-axis " + headerClass + "'>&nbsp;</th>";
+
+        html +=
+            "</tr>" +
+            "</tbody>";
+
+        return html;
+    }
+
+
+    function buildDayTableHTML() {
+        var html =
+            "<table style='width:100%' class='fc-agenda-days fc-border-separate' cellspacing='0'>" +
+            buildDayTableHeadHTML() +
+            buildDayTableBodyHTML() +
+            "</table>";
+
+        return html;
+    }
+
+
+    function buildDayTableHeadHTML() {
+        var headerClass = tm + "-widget-header";
+        var date;
+        var html = '';
+        var col;
+
+        html +=
+            "<thead>" +
+            "<tr>";
 
         var days = Math.ceil(colCnt / resources.length);
         for (var i=0; i<days; i++) {
@@ -380,10 +487,8 @@ function ResourceView(element, calendar, viewName) {
         }
 
         html +=
-            "<th class='fc-agenda-gutter " + headerClass + "'>&nbsp;</th>" +
             "</tr>" +
-            "<tr>" +
-            "<th class='fc-agenda-axis " + headerClass + "'>&nbsp;</th>";
+            "<tr>";
         for (var col=0; col<colCnt; col++) {
             var resource = resources[col % resources.length];
             date = cellToDate(0, col);
@@ -393,7 +498,6 @@ function ResourceView(element, calendar, viewName) {
                 "</th>";
         }
         html +=
-            "<th class='fc-agenda-gutter " + headerClass + "'>&nbsp;</th>" +
             "</tr>" +
             "</thead>";
 
@@ -414,8 +518,7 @@ function ResourceView(element, calendar, viewName) {
 
         html +=
             "<tbody>" +
-            "<tr>" +
-            "<th class='fc-agenda-axis " + headerClass + "'>&nbsp;</th>";
+            "<tr>";
 
         cellsHTML = '';
 
@@ -455,7 +558,30 @@ function ResourceView(element, calendar, viewName) {
 
         html += cellsHTML;
         html +=
-            "<td class='fc-agenda-gutter " + contentClass + "'>&nbsp;</td>" +
+            "</tr>" +
+            "</tbody>";
+
+        return html;
+    }
+
+
+    function buildDayGutterHTML() {
+        var headerClass = tm + "-widget-header";
+        var html =
+            "<table style='width:100%; float:left;' class='fc-agenda-days fc-agenda-days-axis fc-border-separate' cellspacing='0'>";
+
+        html +=
+            "<thead>" +
+            "<tr>" +
+            "<th class='fc-agenda-gutter " + headerClass + "'>&nbsp;</th>" +
+            "</tr>" +
+            "<tr>" +
+            "<th class='fc-agenda-gutter " + headerClass + "'>&nbsp;</th>" +
+            "</tr>" +
+            "</thead>"
+            "<tbody>" +
+            "<tr>" +
+            "<th class='fc-agenda-gutter " + headerClass + "'>&nbsp;</th>" +
             "</tr>" +
             "</tbody>";
 
@@ -489,7 +615,11 @@ function ResourceView(element, calendar, viewName) {
         .height(bodyHeight - vsides(dayBodyFirstCell));
 		
         slotLayer.css('top', headHeight);
-		
+
+        var slotTableHeight = slotScroller[0].clientHeight;
+        var gutterHeight = slotScroller.height() - slotTableHeight;
+
+        axisScroller.height(bodyHeight - allDayHeight - 1 - gutterHeight);
         slotScroller.height(bodyHeight - allDayHeight - 1);
 		
 		// the stylesheet guarantees that the first row has no border.
@@ -506,11 +636,11 @@ function ResourceView(element, calendar, viewName) {
 		colPositions.clear();
         colContentPositions.clear();
 		
-		var axisFirstCells = resourceHead.find('th:first');
-		if (allDayTable) {
-			axisFirstCells = axisFirstCells.add(allDayTable.find('th:first'));
+//		var axisFirstCells = axisTable.find('th:first');
+		var axisFirstCells = axisSlotTable.find('th:first');
+		if (allDayAxis) {
+			axisFirstCells = axisFirstCells.add(allDayAxis.find('th:first'));
 		}
-		axisFirstCells = axisFirstCells.add(slotTable.find('th:first'));
 
         axisWidth = 0;
         setOuterWidth(
@@ -548,10 +678,21 @@ function ResourceView(element, calendar, viewName) {
         if(colMinWidth && colWidth < colMinWidth) colWidth = colMinWidth;
         setOuterWidth(resourceHeadCells.slice(0, -1), colWidth);
 
-        var tableWidth = (colWidth * colCnt) + axisWidth + gutterWidth;
+        axisScroller.width(axisWidth);
+        axisTable.width(axisWidth);
+        axisSlotTable.width(axisWidth);
+        dayScroller.width(viewWidth - axisWidth - gutterWidth);
+        slotScroller.width(viewWidth - axisWidth);
+        gutterTable.width(gutterWidth);
+
+        var tableWidth = (colWidth * colCnt) + gutterWidth;
         dayTable.width(tableWidth);
+
         if(allDayTable) allDayTable.width(tableWidth);
         if(daySegmentContainer) daySegmentContainer.width(tableWidth);
+        if(allDayScroller) allDayScroller.width(viewWidth - axisWidth - gutterWidth);
+        if(allDayAxis) allDayAxis.width(axisWidth);
+        if(allDayGutter) allDayGutter.width(gutterWidth);
 
         var slotContainerWidth = tableWidth - gutterWidth;
         slotContainer.width(slotContainerWidth);
@@ -569,6 +710,7 @@ function ResourceView(element, calendar, viewName) {
         scrollDate.setHours(opt('firstHour'));
         var top = timePosition(d0, scrollDate) + 1; // +1 for the border
         function scroll() {
+            axisScroller.scrollTop(top);
             slotScroller.scrollTop(top);
         }
         scroll();
@@ -808,7 +950,11 @@ function ResourceView(element, calendar, viewName) {
 	
 
     function getAllDayRow(index) {
-        return allDayRow;
+        if (index === 0 && allDayAxis) {
+            return allDayAxis.find('tr');
+        } else {
+            return allDayRow;
+        }
     }
 	
 	
