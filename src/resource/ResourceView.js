@@ -207,6 +207,20 @@ function ResourceView(element, calendar, viewName) {
         var maxd;
         var minutes;
         var slotNormal = opt('slotMinutes') % 15 == 0;
+
+        var html = buildDayAxisHTML();
+
+        axisTable = $(html).appendTo(element);
+
+        if (dayScroller) {
+            dayScroller.remove();
+        }
+
+        dayScroller = $("<div style='width: 100%; float:left; overflow-x:hidden;'/>")
+            .appendTo(element);
+
+        html = buildDayGutterHTML();
+        gutterTable = $(html).appendTo(element);
 		
 		buildDayTable();
 
@@ -354,29 +368,19 @@ function ResourceView(element, calendar, viewName) {
 
 
     function buildDayTable() {
-        var html = buildDayAxisHTML();
+        var html = buildDayTableHTML();
 
-        axisTable = $(html).appendTo(element);
-
-        if (dayScroller) {
-            dayScroller.remove();
+        if (dayTable) {
+            dayTable.remove();
         }
-
-        dayScroller = $("<div style='width: 100%; float:left; overflow-x:hidden;'/>")
-            .appendTo(element);
-
-        html = buildDayTableHTML();
         dayTable = $(html).appendTo(dayScroller);
 
-        html = buildDayGutterHTML();
-        gutterTable = $(html).appendTo(element);
-
         dayHead = dayTable.find('thead');
-        dayHeadCells = dayHead.find('tr:eq(0) th').slice(1, -1); // exclude gutter
+        dayHeadCells = dayHead.find('tr:eq(0) th');
         resourceHead = dayTable.find('thead tr:eq(1)');
-        resourceHeadCells = resourceHead.find('th').slice(1,-1); // exclude gutter
+        resourceHeadCells = resourceHead.find('th');
         dayBody = dayTable.find('tbody');
-        dayBodyCells = dayBody.find('td').slice(0, -1); // exclude gutter
+        dayBodyCells = dayBody.find('td');
         dayBodyCellInners = dayBodyCells.find('> div');
         dayBodyCellContentInners = dayBodyCells.find('.fc-day-content > div');
 
@@ -1116,6 +1120,7 @@ function ResourceView(element, calendar, viewName) {
         var cell = hoverListener.stop();
         clearOverlays();
         if (cell) {
+            debugger;
 			trigger('drop', _dragElement, realCellToDate(cell), getIsCellAllDay(cell), ev, ui);
         }
     }
