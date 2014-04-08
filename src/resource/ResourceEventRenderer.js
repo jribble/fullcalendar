@@ -468,6 +468,8 @@ function ResourceEventRenderer() {
                     clearOverlays();
                     if (cell) {
                         revert = false;
+                        var origResourceNum = origCell.col % resources.length;
+                        var resourceNum = cell.col % resources.length;
 						var origDate = cellToDate(0, origCell.col);
 						var date = cellToDate(0, cell.col);
 						dayDelta = dayDiff(date, origDate);
@@ -500,7 +502,7 @@ function ResourceEventRenderer() {
                                 revert = true;
                             }
                         }
-                        revert = revert || (allDay && !dayDelta);
+                        revert = revert || ((allDay && !dayDelta) && resourceNum == origResourceNum);
                     }else{
                         resetElement();
                         revert = true;
@@ -511,7 +513,7 @@ function ResourceEventRenderer() {
             stop: function(ev, ui) {
                 var cell = hoverListener.stop();
                 clearOverlays();
-                event.resourceId = resources[cell.col].id;
+                if(!revert && cell) event.resourceId = resources[cell.col % resources.length].id;
                 trigger('eventDragStop', eventElement, event, ev, ui);
                 if (revert) {
                     // hasn't moved or is out of bounds (draggable has already reverted)
@@ -527,8 +529,7 @@ function ResourceEventRenderer() {
                         + minMinute
                         - (event.start.getHours() * 60 + event.start.getMinutes());
                     }
-                    
-                    dayDelta = 0;
+
                     eventDrop(this, event, dayDelta, minuteDelta, allDay, ev, ui);
                 }
             }
@@ -562,6 +563,7 @@ function ResourceEventRenderer() {
 		var colDelta, prevColDelta;
 		var dayDelta; // derived from colDelta
 		var minuteDelta, prevMinuteDelta;
+        var resourceNum;
 
         eventElement.draggable({
             scroll: false,
@@ -584,6 +586,7 @@ function ResourceEventRenderer() {
 				colDelta = prevColDelta = 0;
 				dayDelta = 0;
                 minuteDelta = prevMinuteDelta = 0;
+                resourceNum = (origCell.col % resources.length);
 
 			},
 			drag: function(ev, ui) {
@@ -611,6 +614,7 @@ function ResourceEventRenderer() {
 						col = Math.min(colCnt-1, col);
 						var date = cellToDate(0, col);
 						dayDelta = dayDiff(date, origDate);
+                        resourceNum = (col % resources.length);
                     }
 
 					// calculate minute delta (only if over slots)
@@ -645,7 +649,10 @@ function ResourceEventRenderer() {
                 clearOverlays();
                 trigger('eventDragStop', eventElement, event, ev, ui);
 
-				if (isInBounds && (isAllDay || dayDelta || minuteDelta)) { // changed!
+                var resourceId = resources[resourceNum].id;
+
+				if (isInBounds && (isAllDay || dayDelta || minuteDelta || resourceId != event.resourceId)) { // changed!
+                    event.resourceId = resourceId;
 					eventDrop(this, event, dayDelta, isAllDay ? 0 : minuteDelta, isAllDay, ev, ui);
 				}
 				else { // either no change or out-of-bounds (draggable has already reverted)
@@ -656,6 +663,7 @@ function ResourceEventRenderer() {
 					colDelta = 0;
                     dayDelta = 0;
 					minuteDelta = 0;
+                    resourceNum = null;
 
 					updateUI();
                     eventElement.css('filter', ''); // clear IE opacity side-effects

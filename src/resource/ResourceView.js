@@ -58,7 +58,6 @@ function ResourceView(element, calendar, viewName) {
     t.reportDayClick = reportDayClick; // selection mousedown hack
     t.dragStart = dragStart;
     t.dragStop = dragStop;
-    t.resourceCol = resourceCol;
     t.colToResource = colToResource;
     t.resources = calendar.fetchResources();
     
@@ -80,7 +79,8 @@ function ResourceView(element, calendar, viewName) {
     var clearOverlays = t.clearOverlays;
     var reportSelection = t.reportSelection;
     var unselect = t.unselect;
-	var daySelectionMousedown = t.daySelectionMousedown;
+    //overridden elsewhere
+	//var daySelectionMousedown = t.daySelectionMousedown;
     var slotSegHtml = t.slotSegHtml;
 	var cellToDate = t.cellToDate;
 	var dateToCell = t.dateToCell;
@@ -253,7 +253,6 @@ function ResourceView(element, calendar, viewName) {
             "<td>" +
             "<div class='fc-day-content'><div style='position:relative'/></div>" +
             "</td>" +
-            "<th class='" + headerClass + " fc-agenda-gutter'>&nbsp;</th>" +
             "</tr>" +
             "</table>";
             allDayTable = $(s).appendTo(allDayScroller);
@@ -689,7 +688,7 @@ function ResourceView(element, calendar, viewName) {
         slotScroller.width(viewWidth - axisWidth);
         gutterTable.width(gutterWidth);
 
-        var tableWidth = (colWidth * colCnt) + gutterWidth;
+        var tableWidth = (colWidth * colCnt);
         dayTable.width(tableWidth);
 
         if(allDayTable) allDayTable.width(tableWidth);
@@ -698,7 +697,7 @@ function ResourceView(element, calendar, viewName) {
         if(allDayAxis) allDayAxis.width(axisWidth);
         if(allDayGutter) allDayGutter.width(gutterWidth);
 
-        var slotContainerWidth = tableWidth - gutterWidth;
+        var slotContainerWidth = tableWidth;
         slotContainer.width(slotContainerWidth);
     }
 	
@@ -902,12 +901,16 @@ function ResourceView(element, calendar, viewName) {
     }
     
     /* return the column index the resource is at.  Return -1 if resource cannot be found. */
-    function resourceCol(resource) {
+    function resourceCol(date, resource) {
+        var dayDelta = dayDiff(date, t.visStart);
+        var resourceNum = -1;
         for (var i=0; i<resources.length; i++) {
-            if (resource.id === resources[i].id)
-                return i;
+            if (resource.id === resources[i].id) {
+                resourceNum = i;;
+            }
         }
-        return -1;
+        if(resourceNum === -1) return -1;
+        return dayDelta * resources.length + resourceNum;
     }
 
     function colToResource(col) {
@@ -999,7 +1002,7 @@ function ResourceView(element, calendar, viewName) {
         var helperOption = opt('selectHelper');
         coordinateGrid.build();
         if (helperOption) {
-            var col = resourceCol(resource);
+            var col = resourceCol(startDate, resource);
             if (col >= 0 && col < colCnt) { // only works when times are on same day
 				var rect = coordinateGrid.rect(0, col, 0, col, slotContainer); // only for horizontal coords
                 var top = timePosition(startDate, startDate);
@@ -1063,7 +1066,7 @@ function ResourceView(element, calendar, viewName) {
             hoverListener.start(function(cell, origCell) {
                 clearSelection();
 				if (cell && cell.col == origCell.col && !getIsCellAllDay(cell)) {
-                    resource = resources[resources.length % cell.col];
+                    resource = resources[cell.col % resources.length];
                     var d1 = realCellToDate(origCell);
                     var d2 = realCellToDate(cell);
                     dates = [
@@ -1084,6 +1087,39 @@ function ResourceView(element, calendar, viewName) {
 						reportDayClick(dates[0], false, ev);
 					}
                     reportSelection(dates[0], dates[3], false, ev, resource.id);
+                }
+            });
+        }
+    }
+
+
+    function daySelectionMousedown(ev) {
+        if (ev.which == 1 && opt('selectable')) { // ev.which==1 means left mouse button
+            unselect(ev);
+            var dates;
+            var resource;
+            hoverListener.start(function(cell, origCell) {
+                clearSelection();
+                if (cell && getIsCellAllDay(cell)) {
+                    resource = resources[cell.col % resources.length];
+                    var d1 = realCellToDate(origCell);
+                    var d2 = realCellToDate(cell);
+                    dates = [
+                        d1,
+                        d2
+                    ].sort(dateCompare);
+                    renderSelection(dates[0], dates[1], true, resource);
+                }else{
+                    dates = null;
+                }
+            }, ev);
+            $(document).one('mouseup', function(ev) {
+                hoverListener.stop();
+                if (dates) {
+                    if (+dates[0] == +dates[1]) {
+                        reportDayClick(dates[0], true, ev);
+                    }
+                    reportSelection(dates[0], dates[1], true, ev, resource.id);
                 }
             });
         }
