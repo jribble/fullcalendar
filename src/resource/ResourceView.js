@@ -461,7 +461,7 @@ function ResourceView(element, calendar, viewName) {
 
     function buildDayTableHTML() {
         var html =
-            "<table style='width:100%' class='fc-agenda-days fc-border-separate' cellspacing='0'>" +
+            "<table style='width:100%;position:relative;' class='fc-agenda-days fc-border-separate' cellspacing='0'>" +
             buildDayTableHeadHTML() +
             buildDayTableBodyHTML() +
             "</table>";
@@ -865,22 +865,22 @@ function ResourceView(element, calendar, viewName) {
 	
 	
 	function colLeft(col) {
-		return colPositions.left(col) - axisWidth;
+		return colPositions.left(col);
 	}
 
 
     function colContentLeft(col) {
-        return colContentPositions.left(col) - axisWidth;
+        return colContentPositions.left(col);
     }
 	
 	
 	function colRight(col) {
-		return colPositions.right(col) - axisWidth;
+		return colPositions.right(col);
 	}
 
 
     function colContentRight(col) {
-        return colContentPositions.right(col) - axisWidth;
+        return colContentPositions.right(col);
     }
 	
 	
