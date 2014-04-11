@@ -566,7 +566,8 @@ function ResourceEventRenderer() {
         var resourceNum;
 
         eventElement.draggable({
-            scroll: false,
+            scroll: true,
+            containment: getSlotContainer(),
 			grid: [colWidth, snapHeight],
             axis: colCnt==1 ? 'y' : false,
             opacity: opt('dragOpacity'),
