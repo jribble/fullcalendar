@@ -1,3 +1,19 @@
+// this needs a custom scrollParent so we find the hidden scrollable
+$.fn.extend({
+    scrollParent: function() {
+        var position = this.css( "position" ),
+            excludeStaticParent = position === "absolute",
+            scrollParent = this.parents().filter( function() {
+                var parent = $( this );
+                if ( excludeStaticParent && parent.css( "position" ) === "static" && parent.css( "float" ) === "none" ) {
+                    return false;
+                }
+                return (/(auto|scroll|hidden)/).test( parent.css( "overflow" ) + parent.css( "overflow-y" ) + parent.css( "overflow-x" ) );
+            }).eq( 0 );
+
+        return position === "fixed" || !scrollParent.length ? $( this[ 0 ].ownerDocument || document ) : scrollParent;
+    }
+});
 
 setDefaults({
     allDaySlot: true,
@@ -318,7 +334,7 @@ function ResourceView(element, calendar, viewName) {
         $("<div style='clear:both;'/>").appendTo(slotLayer);
 				
 		slotContainer =
-            $("<div style='position:relative;width:100%;overflow:hidden'/>")
+            $("<div style='position:relative;width:100%'/>")
             .appendTo(slotScroller);
 				
         slotSegmentContainer =
@@ -353,11 +369,15 @@ function ResourceView(element, calendar, viewName) {
         slotScroller.scroll(function() {
             dayScroller.scrollLeft(slotScroller.scrollLeft());
             axisScroller.scrollTop(slotScroller.scrollTop());
-//            var slotOffset = slotTable.offset();
-//            slotOffset.left = 0;
-//            slotTable.offset(slotOffset);
             if(allDayScroller) allDayScroller.scrollLeft(slotScroller.scrollLeft());
         });
+
+        if(allDayScroller) {
+            allDayScroller.scroll(function() {
+                slotScroller.scrollLeft(allDayScroller.scrollLeft());
+                dayScroller.scrollLeft(allDayScroller.scrollLeft());
+            })
+        }
     }
 
 

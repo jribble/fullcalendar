@@ -457,7 +457,9 @@ function ResourceEventRenderer() {
 		var snapHeight = getSnapHeight();
 		var snapMinutes = getSnapMinutes();
         var minMinute = getMinMinute();
+
         eventElement.draggable({
+            scroll: true,
             opacity: opt('dragOpacity', 'month'), // use whatever the month view was using
             revertDuration: opt('dragRevertDuration'),
             start: function(ev, ui) {
@@ -498,11 +500,9 @@ function ResourceEventRenderer() {
                                     eventElement.draggable('option', 'grid', [colWidth, 1]);
                                     allDay = false;
                                 }
-                            }else{
-                                revert = true;
                             }
                         }
-                        revert = revert || ((allDay && !dayDelta) && resourceNum == origResourceNum);
+                        revert = ((allDay && !dayDelta) && resourceNum == origResourceNum);
                     }else{
                         resetElement();
                         revert = true;
