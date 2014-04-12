@@ -1,4 +1,4 @@
-/*! jQuery UI - v1.11.0pre - 2014-04-10
+/*! jQuery UI - v1.11.0pre - 2014-04-12
 * http://jqueryui.com
 * Includes: core.js, widget.js, mouse.js, draggable.js, droppable.js, resizable.js, selectable.js, sortable.js, effect.js, accordion.js, autocomplete.js, button.js, datepicker.js, dialog.js, effect-blind.js, effect-bounce.js, effect-clip.js, effect-drop.js, effect-explode.js, effect-fade.js, effect-fold.js, effect-highlight.js, effect-puff.js, effect-pulsate.js, effect-scale.js, effect-shake.js, effect-size.js, effect-slide.js, effect-transfer.js, menu.js, position.js, progressbar.js, selectmenu.js, slider.js, spinner.js, tabs.js, tooltip.js
 * Copyright 2014 jQuery Foundation and other contributors; Licensed MIT */
@@ -1579,16 +1579,16 @@ $.widget("ui.draggable", $.ui.mouse, {
 				}
 
 				if (event.pageX - this.offset.click.left < containment[0]) {
-					pageX = containment[0] + this.offset.click.left;
+					pageX = containment[0] + this.offset.click.left + (!scrollIsRootNode ? ( this.cssPosition === "fixed" ? -this.offset.scroll.left : this.offset.scroll.left ) : 0 );
 				}
 				if (event.pageY - this.offset.click.top < containment[1]) {
-					pageY = containment[1] + this.offset.click.top;
+					pageY = containment[1] + this.offset.click.top + (!scrollIsRootNode ? ( this.cssPosition === "fixed" ? -this.offset.scroll.top : this.offset.scroll.top ) : 0 );
 				}
 				if (event.pageX - this.offset.click.left > containment[2]) {
-					pageX = containment[2] + this.offset.click.left;
+					pageX = containment[2] + this.offset.click.left + (!scrollIsRootNode ? ( this.cssPosition === "fixed" ? -this.offset.scroll.left : this.offset.scroll.left ) : 0 );
 				}
 				if (event.pageY - this.offset.click.top > containment[3]) {
-					pageY = containment[3] + this.offset.click.top;
+					pageY = containment[3] + this.offset.click.top + (!scrollIsRootNode ? ( this.cssPosition === "fixed" ? -this.offset.scroll.top : this.offset.scroll.top ) : 0 );
 				}
 			}
 
