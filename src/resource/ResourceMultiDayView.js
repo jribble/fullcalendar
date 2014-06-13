@@ -32,7 +32,16 @@ function ResourceMultiDayView(element, calendar) {
 		t.start = t.visStart = start;
 		t.end = t.visEnd = end;
 
-		renderResource(4);
+        var d = date.getDate();
+        var m = date.getMonth();
+        var y = date.getFullYear();
+
+        var days = [start,
+            new Date(y, m, d + 1),
+            new Date(y, m, d + 3),
+            new Date(y, m, d + 4)];
+
+		renderResource(days);
 	}
 	
 

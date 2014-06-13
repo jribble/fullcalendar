@@ -174,8 +174,9 @@ function ResourceView(element, calendar, viewName) {
 
 	
     function renderResource(days) {
-        if(days==null) days = 1;
-        colCnt = resources.length * days;
+        if(days==null) days = [t.start];
+        t.days = days;
+        colCnt = resources.length * days.length;
         updateOptions();
 
         if (!dayTable) {
@@ -922,15 +923,23 @@ function ResourceView(element, calendar, viewName) {
     
     /* return the column index the resource is at.  Return -1 if resource cannot be found. */
     function resourceCol(date, resource) {
-        var dayDelta = dayDiff(date, t.visStart);
+        var dayDelta = 0;
+
+        for(var i=0;i<t.days.length;i++) {
+            if (t.days[i].getTime() == date.getTime()) {
+                dayDelta = i;
+                break;
+            }
+        }
+
         var resourceNum = -1;
         for (var i=0; i<resources.length; i++) {
             if (resource.id === resources[i].id) {
-                resourceNum = i;;
+                resourceNum = i;
             }
         }
         if(resourceNum === -1) return -1;
-        return dayDelta * resources.length + resourceNum;
+        return (dayDelta * resources.length) + resourceNum;
     }
 
     function colToResource(col) {
@@ -940,8 +949,9 @@ function ResourceView(element, calendar, viewName) {
 
     function resourceDate(col) {
         var delta = Math.floor(col / resources.length);
-        var date = cloneDate(t.visStart);
-        return addDays(date, delta);
+        if(delta > (t.days.length - 1)) delta = t.days.length - 1;
+        var date = cloneDate(t.days[delta]);
+        return date;
     }
 
 
