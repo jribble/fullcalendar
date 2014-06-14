@@ -7,6 +7,7 @@ function ResourceMultiDayView(element, calendar) {
 	
 	// exports
 	t.render = render;
+    t.setDays = setDays;
 	
 	
 	// imports
@@ -18,31 +19,65 @@ function ResourceMultiDayView(element, calendar) {
 	
 
 	function render(date, delta) {
+        var days;
+        if (delta instanceof Array) {
+            days = delta;
 
-        if (delta) {
-            addDays(date, delta);
+            var start = cloneDate(days[0], true);
+            var end = cloneDate(days[days.length-1], true);
+
+            t.title = formatDate(date, opt('titleFormat'));
+
+            t.start = t.visStart = start;
+            t.end = t.visEnd = end;
         }
-        skipHiddenDays(date, delta < 0 ? -1 : 1);
+        else {
+            if(t.days == null) {
+                if (delta) {
+                    addDays(date, delta);
+                }
+                skipHiddenDays(date, delta < 0 ? -1 : 1);
 
-		var start = cloneDate(date, true);
-		var end = addDays(cloneDate(start), 4);
+                var start = cloneDate(date, true);
+                var end = addDays(cloneDate(start), 4);
 
-		t.title = formatDate(date, opt('titleFormat'));
+                t.title = formatDate(date, opt('titleFormat'));
 
-		t.start = t.visStart = start;
-		t.end = t.visEnd = end;
+                t.start = t.visStart = start;
+                t.end = t.visEnd = end;
 
-        var d = date.getDate();
-        var m = date.getMonth();
-        var y = date.getFullYear();
+                days = [];
 
-        var days = [start,
-            new Date(y, m, d + 1),
-            new Date(y, m, d + 3),
-            new Date(y, m, d + 4)];
+                var ms = start.getTime();
+
+                if(delta < 1) delta = 1;
+                for(var i=0;i<delta;i++) {
+                    days.push(new Date(ms + (i * 1000 * 60 * 60 * 24)));
+                }
+            }
+            else {
+                days = [];
+                for(var i=0;i<t.days.length;i++) {
+                    var day = t.days[i];
+                    var ms = day.getTime();
+                    days.push(new Date(ms + (delta * 1000 * 60 * 60 * 24)));
+                }
+
+                var start = cloneDate(days[0], true);
+                var end = cloneDate(days[days.length-1], true);
+
+                t.title = formatDate(start, opt('titleFormat'));
+
+                t.start = t.visStart = start;
+                t.end = t.visEnd = end;
+            }
+        }
 
 		renderResource(days);
 	}
-	
+
+    function setDays(days) {
+        renderResource(days);
+    }
 
 }
