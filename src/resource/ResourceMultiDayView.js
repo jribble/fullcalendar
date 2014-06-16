@@ -21,7 +21,10 @@ function ResourceMultiDayView(element, calendar) {
 	function render(date, delta) {
         var days;
         if (delta instanceof Array) {
-            days = delta;
+            days = [];
+            delta.forEach(function(date) {
+                days.push(cloneDate(date, true));
+            });
 
             var start = cloneDate(days[0], true);
             var end = cloneDate(days[days.length-1], true);
