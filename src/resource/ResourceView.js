@@ -175,6 +175,7 @@ function ResourceView(element, calendar, viewName) {
 	
     function renderResource(days) {
         if(days==null) days = [t.start];
+        if(resources==null||resources.length==0) resources = [{name:"",id:""}];
         t.days = days;
         colCnt = resources.length * days.length;
         updateOptions();
