@@ -383,7 +383,7 @@ function EventManager(options, _sources) {
             return;
         }
         
-        var resources = options.resources;
+        var resources = options.resources == null ? [] : options.resources;
         
         $.each(
             resources,
