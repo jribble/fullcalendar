@@ -526,7 +526,7 @@ function ResourceView(element, calendar, viewName) {
             date = cellToDate(0, col);
             html +=
                 "<th class='fc-" + dayIDs[date.getDay()] + " fc-col" + col + ' ' + headerClass + "'>" +
-                htmlEscape(resource.name) +
+                (resource.name == "" ? "&nbsp;" : htmlEscape(resource.name)) +
                 "</th>";
         }
         html +=
