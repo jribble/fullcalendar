@@ -198,6 +198,12 @@ function ResourceView(element, calendar, viewName) {
         colFormat = opt('columnFormat');
         colMinWidth = opt('colMinWidth');
 
+        var newSlotHeight = opt('slotHeight');
+        if(newSlotHeight != null && newSlotHeight != slotHeight && dayTable != null) {
+            $("table.fc-agenda-slots tr", element).height(newSlotHeight);
+        }
+        slotHeight = newSlotHeight;
+
         // week # options. (TODO: bad, logic also in other views)
         showWeekNumbers = opt('weekNumbers');
         weekNumberTitle = opt('weekNumberTitle');
@@ -221,7 +227,7 @@ function ResourceView(element, calendar, viewName) {
         var headerClass = tm + "-widget-header";
         var contentClass = tm + "-widget-content";
         var s;
-		var d;
+        var d;
         var i;
         var maxd;
         var minutes;
@@ -240,15 +246,15 @@ function ResourceView(element, calendar, viewName) {
 
         html = buildDayGutterHTML();
         gutterTable = $(html).appendTo(element);
-		
-		buildDayTable();
+
+        buildDayTable();
 
         $("<div style='clear:both;'/>").appendTo(element);
 
         slotLayer =
-        $("<div style='position:absolute;z-index:2;left:0;width:100%'/>")
-        .appendTo(element);
-				
+            $("<div style='position:absolute;z-index:2;left:0;width:100%'/>")
+                .appendTo(element);
+
         if (opt('allDaySlot')) {
 
             s =
@@ -261,22 +267,22 @@ function ResourceView(element, calendar, viewName) {
 
             allDayScroller = $("<div style='width:100%; float:left; overflow-x:hidden;'/>")
                 .appendTo(slotLayer);
-		
+
             daySegmentContainer =
-				$("<div class='fc-event-container' style='position:relative;z-index:8;top:0;left:0'/>")
-            .appendTo(allDayScroller);
-		
+                $("<div class='fc-event-container' style='position:relative;z-index:8;top:0;left:0'/>")
+                    .appendTo(allDayScroller);
+
             s =
-            "<table style='width:100%;' class='fc-agenda-allday' cellspacing='0'>" +
-            "<tr>" +
-            "<td>" +
-            "<div class='fc-day-content'><div style='position:relative'/></div>" +
-            "</td>" +
-            "</tr>" +
-            "</table>";
+                "<table style='width:100%;' class='fc-agenda-allday' cellspacing='0'>" +
+                "<tr>" +
+                "<td>" +
+                "<div class='fc-day-content'><div style='position:relative'/></div>" +
+                "</td>" +
+                "</tr>" +
+                "</table>";
             allDayTable = $(s).appendTo(allDayScroller);
             allDayRow = allDayTable.find('tr');
-			
+
             dayBind(allDayRow.find('td'));
 
 
@@ -289,15 +295,15 @@ function ResourceView(element, calendar, viewName) {
             allDayGutter = $(s).appendTo(slotLayer);
 
             slotLayer.append(
-                "<div class='fc-agenda-divider " + headerClass + "' style='clear:both;'>" +
-                "<div class='fc-agenda-divider-inner'/>" +
-                "</div>"
-                );
-			
+                    "<div class='fc-agenda-divider " + headerClass + "' style='clear:both;'>" +
+                    "<div class='fc-agenda-divider-inner'/>" +
+                    "</div>"
+            );
+
         }else{
-		
+
             daySegmentContainer = $([]); // in jQuery 1.4, we can just do $()
-		
+
         }
 
         axisScroller =
@@ -314,7 +320,7 @@ function ResourceView(element, calendar, viewName) {
         for (i=0; d < maxd; i++) {
             minutes = d.getMinutes();
             s +=
-                "<tr class='fc-slot" + i + ' ' + (!minutes ? '' : 'fc-minor') + "'>" +
+                "<tr class='fc-slot" + i + ' ' + (!minutes ? '' : 'fc-minor') + "'" + ( slotHeight != null ? " style='height:" + slotHeight + "px'" : "" ) + ">" +
                 "<th class='fc-agenda-axis " + headerClass + "'>" +
                 "<div style='position:relative;'>" +
                 ((!slotNormal || !minutes) ? formatDate(d, opt('axisFormat')) : '&nbsp;') +
@@ -329,21 +335,21 @@ function ResourceView(element, calendar, viewName) {
             "</table>";
 
         axisSlotTable = $(s).appendTo(axisScroller);
-		
+
         slotScroller =
             $("<div style='position:relative;width:100%;float:left;overflow-x:auto;overflow-y:auto'/>")
                 .appendTo(slotLayer);
 
         $("<div style='clear:both;'/>").appendTo(slotLayer);
-				
-		slotContainer =
+
+        slotContainer =
             $("<div style='position:relative;width:100%'/>")
-            .appendTo(slotScroller);
-				
+                .appendTo(slotScroller);
+
         slotSegmentContainer =
-			$("<div class='fc-event-container' style='position:absolute;z-index:8;top:0;left:0'/>")
-				.appendTo(slotContainer);
-		
+            $("<div class='fc-event-container' style='position:absolute;z-index:8;top:0;left:0'/>")
+                .appendTo(slotContainer);
+
         s =
             "<table class='fc-agenda-slots' style='width:100%' cellspacing='0'>" +
             "<tbody>";
@@ -354,7 +360,7 @@ function ResourceView(element, calendar, viewName) {
         for (i=0; d < maxd; i++) {
             minutes = d.getMinutes();
             s +=
-                "<tr class='fc-slot" + i + ' ' + (!minutes ? '' : 'fc-minor') + "'>" +
+                "<tr class='fc-slot" + i + ' ' + (!minutes ? '' : 'fc-minor') + "'" + ( slotHeight != null ? " style='height:" + slotHeight + "px'" : "" ) + ">" +
                 "<td class='" + contentClass + "'>" +
                 "<div style='position:relative'>&nbsp;</div>" +
                 "</td>" +
@@ -365,8 +371,8 @@ function ResourceView(element, calendar, viewName) {
         s +=
             "</tbody>" +
             "</table>";
-		slotTable = $(s).appendTo(slotContainer);
-		
+        slotTable = $(s).appendTo(slotContainer);
+
         slotBind(slotTable.find('td'));
 
         slotScroller.scroll(function() {
@@ -650,7 +656,9 @@ function ResourceView(element, calendar, viewName) {
 		
 		// the stylesheet guarantees that the first row has no border.
 		// this allows .height() to work well cross-browser.
-		slotHeight = slotTable.find('tr:first').height() + 1; // +1 for bottom border
+        if(slotHeight == null) {
+            slotHeight = slotTable.find('tr:first').height() + 1; // +1 for bottom border
+        }
 		
 		snapRatio = opt('slotMinutes') / snapMinutes;
 		snapHeight = slotHeight / snapRatio;
@@ -723,7 +731,6 @@ function ResourceView(element, calendar, viewName) {
         var slotContainerWidth = tableWidth;
         slotContainer.width(slotContainerWidth);
     }
-	
 
 
 	/* Scrolling
