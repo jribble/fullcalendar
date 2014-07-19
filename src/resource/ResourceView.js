@@ -707,7 +707,7 @@ function ResourceView(element, calendar, viewName) {
             .addClass('fc-last');
         }
 		
-        colWidth = Math.floor((slotTableWidth - axisWidth) / colCnt);
+        colWidth = Math.floor(slotTableWidth / colCnt);
         //TODO: Make this configurable
         if(colMinWidth && colWidth < colMinWidth) colWidth = colMinWidth;
         setOuterWidth(resourceHeadCells.slice(0, -1), colWidth);
