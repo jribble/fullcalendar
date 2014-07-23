@@ -509,7 +509,7 @@ function Calendar(element, options, eventSources, resourceSources) {
 			return options[name];
 		}
         options[name] = value;
-		if (name == 'height' || name == 'contentHeight' || name == 'aspectRatio' || name == 'slotHeight') {
+		if (name == 'height' || name == 'contentHeight' || name == 'aspectRatio') {
 			updateSize();
 		}
 	}
