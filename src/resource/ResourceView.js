@@ -525,7 +525,7 @@ function ResourceView(element, calendar, viewName) {
             var resource = resources[col % resources.length];
             date = cellToDate(0, col);
             html +=
-                "<th class='fc-" + dayIDs[date.getDay()] + " fc-col" + col + ' ' + headerClass + "'>" +
+                "<th class='fc-" + dayIDs[date.getDay()] + " fc-col" + col + ' ' + headerClass + "'" + (colMinWidth ? "style='min-width:" + colMinWidth + "px;'" : "" ) + ">" +
                 (resource.name == "" ? "&nbsp;" : htmlEscape(resource.name)) +
                 "</th>";
         }
