@@ -420,6 +420,24 @@ function ResourceView(element, calendar, viewName) {
         markFirstLast(resourceHead.add(resourceHead));
         markFirstLast(dayBody.add(dayBody.find('tr')));
 
+        // trigger events for day column headers
+        var dayths = dayTable.find('th[data-date]:not([data-resource-id])');
+        dayths.each(function(index, element) {
+            var date = $.attr(element, 'data-date');
+            var el = $(element);
+            trigger('dayRender', el, moment(date).toDate(), el);
+        });
+
+        // trigger events for resource column headers
+        var resths = dayTable.find('th[data-resource-id]');
+        resths.each(function(index, element) {
+            var resourceId = $.attr(element, 'data-resource-id');
+            if(resourceId === "null") resourceId = null;
+            var el = $(element);
+            trigger('resourceRender', el, resourceId, el);
+        });
+
+
         // TODO: now that we rebuild the cells every time, we should call dayRender
     }
 
@@ -513,7 +531,7 @@ function ResourceView(element, calendar, viewName) {
             var col = i * resources.length;
             date = cellToDate(0, col);
             html +=
-                "<th class='fc-" + dayIDs[date.getDay()] + " fc-col" + col + ' '  + headerClass + "' colspan=" + resources.length + ">" +
+                "<th class='fc-" + dayIDs[date.getDay()] + " fc-col" + col + ' '  + headerClass + "' colspan=" + resources.length + " data-date='" + moment(date).format("YYYY-MM-DD") + "' >" +
                 htmlEscape(formatDate(date, colFormat)) +
                 "</th>";
         }
@@ -525,7 +543,7 @@ function ResourceView(element, calendar, viewName) {
             var resource = resources[col % resources.length];
             date = cellToDate(0, col);
             html +=
-                "<th class='fc-" + dayIDs[date.getDay()] + " fc-col" + col + ' ' + headerClass + "'" + (colMinWidth ? "style='min-width:" + colMinWidth + "px;'" : "" ) + ">" +
+                "<th class='fc-" + dayIDs[date.getDay()] + " fc-col" + col + ' ' + headerClass + "'" + (colMinWidth ? "style='min-width:" + colMinWidth + "px;'" : "" ) + " data-date='" + moment(date).format("YYYY-MM-DD") + "' data-resource-id='" + resource.id + "' >" +
                 (resource.name == "" ? "&nbsp;" : htmlEscape(resource.name)) +
                 "</th>";
         }
