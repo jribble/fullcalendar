@@ -531,7 +531,7 @@ function ResourceView(element, calendar, viewName) {
             var col = i * resources.length;
             date = cellToDate(0, col);
             html +=
-                "<th class='fc-" + dayIDs[date.getDay()] + " fc-col" + col + ' '  + headerClass + "' colspan=" + resources.length + " data-date='" + moment(date).format("YYYY-MM-DD") + "' >" +
+                "<th class='fc-" + dayIDs[date.getDay()] + " fc-col" + col + ' '  + headerClass + (today.isSame(date, 'day') ? ' fc-col-today' : '') + "' colspan=" + resources.length + " data-date='" + moment(date).format("YYYY-MM-DD") + "' >" +
                 htmlEscape(formatDate(date, colFormat)) +
                 "</th>";
         }
