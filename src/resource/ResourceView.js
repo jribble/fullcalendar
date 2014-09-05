@@ -519,6 +519,7 @@ function ResourceView(element, calendar, viewName) {
     function buildDayTableHeadHTML() {
         var headerClass = tm + "-widget-header";
         var date;
+        var today = moment(clearTime(new Date()));
         var html = '';
         var col;
 
