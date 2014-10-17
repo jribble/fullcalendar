@@ -834,7 +834,7 @@ function ResourceView(element, calendar, viewName) {
 					segment.rightCol
 				)
 			);
-    }
+        }
 	}
 
 	

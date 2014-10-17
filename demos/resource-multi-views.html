@@ -3,6 +3,7 @@
 <head>
     <link href='../build/out/fullcalendar.css' rel='stylesheet' />
     <link href='../build/out/fullcalendar.print.css' rel='stylesheet' media='print' />
+    <script src='http://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.3/moment.js'></script>
     <script src='../lib/jquery/dist/jquery.js'></script>
     <script src='../lib/jquery-ui/ui/jquery-ui.js'></script>
     <script src='../build/out/fullcalendar.js'></script>
@@ -129,6 +130,11 @@
                         url: 'http://google.com/',
                         resourceId: 'resource3'
                     }
+                ],
+                days: [
+                    new Date(y, m, d-1),
+                    new Date(y, m, d),
+                    new Date(y, m, d+1)
                 ]
             });
 

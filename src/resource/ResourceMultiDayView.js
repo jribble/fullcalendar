@@ -36,26 +36,28 @@ function ResourceMultiDayView(element, calendar) {
         }
         else {
             if(t.days == null) {
-                if (delta) {
-                    addDays(date, delta);
+                if(opt('days') != null) {
+                    days = opt('days');
                 }
-                skipHiddenDays(date, delta < 0 ? -1 : 1);
+                else {
+                    skipHiddenDays(date, delta < 0 ? -1 : 1);
 
-                var start = cloneDate(date, true);
-                var end = addDays(cloneDate(start), 4);
+                    t.title = formatDate(date, opt('titleFormat'));
 
-                t.title = formatDate(date, opt('titleFormat'));
+                    var start = cloneDate(date, true);
+                    var end = addDays(cloneDate(start), 1);
 
-                t.start = t.visStart = start;
-                t.end = t.visEnd = end;
+                    t.start = t.visStart = start;
+                    t.end = t.visEnd = end;
 
-                days = [];
+                    days = [];
 
-                var ms = start.getTime();
+                    var ms = start.getTime();
 
-                if(delta < 1) delta = 1;
-                for(var i=0;i<delta;i++) {
-                    days.push(new Date(ms + (i * 1000 * 60 * 60 * 24)));
+                    if(delta < 1) delta = 1;
+                    for(var i=0;i<delta;i++) {
+                        days.push(new Date(ms + (i * 1000 * 60 * 60 * 24)));
+                    }
                 }
             }
             else {
