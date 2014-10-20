@@ -9,6 +9,13 @@
     <script src='../build/out/fullcalendar.js'></script>
     <script type='text/javascript'>
 
+        function renderFooter (technicianId, element) {
+            if(technicianId != null) {
+                var forms = $('<span>' + technicianId + '</span>');
+                element.append(forms);
+            }
+        }
+
         $(document).ready(function() {
 
             var date = new Date();
@@ -135,7 +142,9 @@
                     new Date(y, m, d-1),
                     new Date(y, m, d),
                     new Date(y, m, d+1)
-                ]
+                ],
+                showFooter: true,
+                footerRender: renderFooter
             });
 
         });

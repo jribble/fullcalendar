@@ -114,6 +114,8 @@ function ResourceView(element, calendar, viewName) {
     var dayHeadCells;
     var resourceHead;
     var resourceHeadCells;
+    var resourceFoot;
+    var resourceFootCells;
     var dayBody;
     var dayBodyCells;
     var dayBodyCellInners;
@@ -407,6 +409,8 @@ function ResourceView(element, calendar, viewName) {
         dayHeadCells = dayHead.find('tr:eq(0) th');
         resourceHead = dayTable.find('thead tr:eq(1)');
         resourceHeadCells = resourceHead.find('th');
+        resourceFoot = dayTable.find('tfoot');
+        resourceFootCells = resourceFoot.find('tr:eq(0) td');
         dayBody = dayTable.find('tbody');
         dayBodyCells = dayBody.find('td');
         dayBodyCellInners = dayBodyCells.find('> div');
@@ -435,6 +439,15 @@ function ResourceView(element, calendar, viewName) {
             if(resourceId === "null") resourceId = null;
             var el = $(element);
             trigger('resourceRender', el, resourceId, el);
+        });
+
+        // trigger events for resource column footers
+        var footths = dayTable.find('tfoot th[data-resource-id]');
+        footths.each(function(index, element) {
+            var resourceId = $.attr(element, 'data-resource-id');
+            if(resourceId === "null") resourceId = null;
+            var el = $(element);
+            trigger('footerRender', el, resourceId, el);
         });
 
 
@@ -506,10 +519,12 @@ function ResourceView(element, calendar, viewName) {
 
 
     function buildDayTableHTML() {
+        var showFooter = opt('showFooter');
         var html =
             "<table style='width:100%;position:relative;' class='fc-agenda-days fc-border-separate' cellspacing='0'>" +
             buildDayTableHeadHTML() +
             buildDayTableBodyHTML() +
+            (!!showFooter ? buildDayTableFootHTML() : "") +
             "</table>";
 
         return html;
@@ -616,6 +631,34 @@ function ResourceView(element, calendar, viewName) {
     }
 
 
+    function buildDayTableFootHTML() {
+        var headerClass = tm + "-widget-header";
+        var date;
+        var today = moment(clearTime(new Date()));
+        var html = '';
+        var col;
+
+        html +=
+            "<tfoot>" +
+            "<tr>";
+
+        for (var col=0; col<colCnt; col++) {
+            var resource = resources[col % resources.length];
+            date = cellToDate(0, col);
+            html +=
+                "<th class='fc-" + dayIDs[date.getDay()] + " fc-col" + col + ' ' + headerClass + "'" + (colMinWidth ? "style='min-width:" + colMinWidth + "px;'" : "" ) + " data-date='" + moment(date).format("YYYY-MM-DD") + "' data-resource-id='" + resource.id + "' >" +
+                "&nbsp;" + //(resource.name == "" ? "&nbsp;" : htmlEscape(resource.name)) +
+                "</th>";
+        }
+
+        html +=
+            "</tr>" +
+            "</tfoot>";
+
+        return html;
+    }
+
+
     function buildDayGutterHTML() {
         var headerClass = tm + "-widget-header";
         var html =
@@ -661,17 +704,18 @@ function ResourceView(element, calendar, viewName) {
             height - headHeight,   // when scrollbars
             slotTable.height() + allDayHeight + 1 // when no scrollbars. +1 for bottom border
             );
+        var footerHeight = resourceFoot.height();
 		
         dayBodyFirstCellStretcher
-        .height(bodyHeight - vsides(dayBodyFirstCell));
+        .height(bodyHeight - vsides(dayBodyFirstCell) - footerHeight);
 		
         slotLayer.css('top', headHeight);
 
         var slotTableHeight = slotScroller[0].clientHeight;
         var gutterHeight = slotScroller.height() - slotTableHeight;
 
-        axisScroller.height(bodyHeight - allDayHeight - 1 - gutterHeight);
-        slotScroller.height(bodyHeight - allDayHeight - 1);
+        axisScroller.height(bodyHeight - allDayHeight - 1 - gutterHeight - footerHeight);
+        slotScroller.height(bodyHeight - allDayHeight - 1 - footerHeight);
 		
 		// the stylesheet guarantees that the first row has no border.
 		// this allows .height() to work well cross-browser.
