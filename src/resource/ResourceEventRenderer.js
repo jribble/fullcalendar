@@ -7,6 +7,8 @@ function ResourceEventRenderer() {
     t.renderEvents = renderEvents;
     t.clearEvents = clearEvents;
     t.slotSegHtml = slotSegHtml;
+    t.renderHighlights = renderHighlights;
+    t.clearHighlights = clearHighlights;
 	
     
     // imports
@@ -20,11 +22,14 @@ function ResourceEventRenderer() {
     var setHeight = t.setHeight;
     var getDaySegmentContainer = t.getDaySegmentContainer;
     var getSlotSegmentContainer = t.getSlotSegmentContainer;
+    var getHighlightSegmentContainer = t.getHighlightSegmentContainer;
     var getHoverListener = t.getHoverListener;
     var getMaxMinute = t.getMaxMinute;
     var getMinMinute = t.getMinMinute;
     var timePosition = t.timePosition;
 	var getIsCellAllDay = t.getIsCellAllDay;
+    var colLeft = t.colLeft;
+    var colRight = t.colRight;
     var colContentLeft = t.colContentLeft;
     var colContentRight = t.colContentRight;
 	var cellToDate = t.cellToDate;
@@ -75,12 +80,25 @@ function ResourceEventRenderer() {
         }
 
         renderSlotSegs(compileSlotSegs(slotEvents), modifiedEventId);
+
+        t.highlights = opt('highlights');
+        if(t.highlights == null) t.highlights = [];
+        renderHighlights(t.highlights);
     }
 	
 	
     function clearEvents() {
         getDaySegmentContainer().empty();
         getSlotSegmentContainer().empty();
+    }
+
+    function renderHighlights(highlights) {
+        renderHighlightSegs(compileHighlightSegs(highlights));
+    }
+
+
+    function clearHighlights() {
+        getHighlightSegmentContainer().empty();
     }
 	
     
@@ -169,6 +187,46 @@ function ResourceEventRenderer() {
 
         return segs;
     }
+
+
+    function compileHighlightSegs(highlights) {
+        var colCnt = getColCnt(),
+            minMinute = getMinMinute(),
+            maxMinute = getMaxMinute(),
+            d,
+            visEventEnds,
+            i,
+            j, seg,
+            colSegs,
+            segs=[];
+
+        for (i=0; i<colCnt; i++) {
+
+            d = cellToDate(0, i);
+            addMinutes(d, minMinute);
+
+            var resource = colToResource(i);
+            var resourceHighlights = highlightsForResource(resource, highlights);
+            visEventEnds = $.map(resourceHighlights, slotEventEnd);
+
+            colSegs = sliceSegs(
+                resourceHighlights,
+                visEventEnds,
+                d,
+                addMinutes(cloneDate(d), maxMinute-minMinute)
+            );
+
+            colSegs = placeSlotSegs(colSegs); // returns a new order
+
+            for (j=0; j<colSegs.length; j++) {
+                seg = colSegs[j];
+                seg.col = i;
+                segs.push(seg);
+            }
+        }
+
+        return segs;
+    }
         
         
     function eventsForResource(resource, events) {
@@ -181,6 +239,19 @@ function ResourceEventRenderer() {
         }
 		
         return resourceEvents;
+    }
+
+
+    function highlightsForResource(resource, highlights) {
+        var resourceHighlights = [];
+
+        for(var i=0; i<highlights.length; i++) {
+            if(highlights[i].resourceId === resource.id) {
+                resourceHighlights.push(highlights[i])
+            }
+        }
+
+        return resourceHighlights;
     }
 
 
@@ -435,7 +506,138 @@ function ResourceEventRenderer() {
         }
         eventElementHandlers(event, eventElement);
     }
-	
+
+
+    function bindHighlightSeg(highlight, highlightElement) {
+        eventElementHandlers(highlight, highlightElement);
+    }
+
+
+
+    // renders highlights in the 'time slots' at the bottom
+    // TODO: when we refactor this, when user returns `false` eventRender, don't have empty space
+    // TODO: refactor will include using pixels to detect collisions instead of dates (handy for seg cmp)
+
+    function renderHighlightSegs(segs, modifiedEventId) {
+
+        var i, segCnt=segs.length, seg,
+            highlight,
+            top,
+            bottom,
+            width,
+            left,
+            right,
+            html='',
+            highlightElements,
+            highlightElement,
+            triggerRes,
+            height,
+            segmentContainer = getHighlightSegmentContainer();
+
+        // calculate position/dimensions, create html
+        for (i=0; i<segCnt; i++) {
+            seg = segs[i];
+            highlight = seg.event;
+            top = timePosition(seg.start, seg.start);
+            bottom = timePosition(seg.start, seg.end);
+            left = colLeft(seg.col);
+            right = colRight(seg.col);
+            width = right - left;
+
+            seg.top = top;
+            seg.left = left;
+            seg.outerWidth = width;
+            seg.outerHeight = bottom - top;
+            html += highlightSegHtml(event, seg);
+        }
+
+        segmentContainer[0].innerHTML = html; // faster than html()
+        highlightElements = segmentContainer.children();
+
+        // retrieve elements, run through eventRender callback, bind event handlers
+        for (i=0; i<segCnt; i++) {
+            seg = segs[i];
+            highlight = seg.event;
+            highlightElement = $(highlightElements[i]); // faster than eq()
+            triggerRes = trigger('highlightRender', highlight, highlight, highlightElement);
+            if (triggerRes === false) {
+                highlightElement.remove();
+            }else{
+                if (triggerRes && triggerRes !== true) {
+                    highlightElement.remove();
+                    highlightElement = $(triggerRes)
+                        .css({
+                            position: 'absolute',
+                            top: seg.top,
+                            left: seg.left
+                        })
+                        .appendTo(segmentContainer);
+                }
+                seg.element = highlightElement;
+                highlightElement[0]._fci = i; // for lazySegBind
+                //reportEventElement(event, eventElement);
+            }
+        }
+
+        lazySegBind(segmentContainer, segs, bindHighlightSeg);
+
+        // record highlight sides and title positions
+        for (i=0; i<segCnt; i++) {
+            seg = segs[i];
+            if (highlightElement = seg.element) {
+                seg.vsides = vsides(highlightElement, true);
+                seg.hsides = hsides(highlightElement, true);
+            }
+        }
+
+        // set all positions/dimensions at once
+        for (i=0; i<segCnt; i++) {
+            seg = segs[i];
+            if (highlightElement = seg.element) {
+                highlightElement[0].style.width = Math.max(0, seg.outerWidth - seg.hsides) + 'px';
+                height = Math.max(0, seg.outerHeight - seg.vsides);
+                highlightElement[0].style.height = height + 'px';
+                highlight = seg.event;
+                trigger('highlightAfterRender', highlight, highlight, highlightElement);
+            }
+        }
+
+    }
+
+
+    function highlightSegHtml(event, seg) {
+        var html = "<";
+        var skinCss = getSkinCss(event, opt);
+        var classes = ['fc-highlight', 'fc-highlight-vert'];
+        if (seg.isStart) {
+            classes.push('fc-highlight-start');
+        }
+        if (seg.isEnd) {
+            classes.push('fc-highlight-end');
+        }
+        if (!!seg.event.class) {
+            classes.push(seg.event.class);
+        }
+        var style = seg.event.style !== undefined ? seg.event.style : '';
+        classes = classes.concat(event.className);
+        if (event.source) {
+            classes = classes.concat(event.source.className || []);
+        }
+
+        html += "div" +
+            " class='" + classes.join(' ') + "'" +
+            " style=" +
+            "'" +
+            "position:absolute;" +
+            "top:" + seg.top + "px;" +
+            "left:" + seg.left + "px;" +
+            skinCss +
+            style +
+            "'" +
+            ">" +
+            "</div>";
+        return html;
+    }
 	
 	
     /* Dragging

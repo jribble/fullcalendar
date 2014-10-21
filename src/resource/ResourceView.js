@@ -58,6 +58,7 @@ function ResourceView(element, calendar, viewName) {
     t.colContentLeft = colContentLeft;
     t.colContentRight = colContentRight;
     t.getDaySegmentContainer = function() { return daySegmentContainer };
+    t.getHighlightSegmentContainer = function() { return highlightSegmentContainer };
     t.getSlotSegmentContainer = function() { return slotSegmentContainer };
     t.getMinMinute = function() { return minMinute };
     t.getMaxMinute = function() { return maxMinute };
@@ -102,6 +103,7 @@ function ResourceView(element, calendar, viewName) {
 	var dateToCell = t.dateToCell;
 	var rangeToSegments = t.rangeToSegments;
     var formatDate = calendar.formatDate;
+    var renderHighlights = t.renderHighlights;
     
     
     // locals
@@ -133,6 +135,7 @@ function ResourceView(element, calendar, viewName) {
     var axisScroller;
     var slotScroller;
 	var slotContainer;
+    var highlightSegmentContainer;
     var slotSegmentContainer;
     var slotTable;
     var selectionHelper;
@@ -347,6 +350,10 @@ function ResourceView(element, calendar, viewName) {
         slotContainer =
             $("<div style='position:relative;width:100%'/>")
                 .appendTo(slotScroller);
+
+        highlightSegmentContainer =
+            $("<div class='fc-highlight-container' style='position:absolute;z-index:-1;top:0;left:0'/>")
+                .appendTo(slotContainer);
 
         slotSegmentContainer =
             $("<div class='fc-event-container' style='position:absolute;z-index:8;top:0;left:0'/>")
