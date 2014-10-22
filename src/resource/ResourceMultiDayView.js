@@ -38,6 +38,14 @@ function ResourceMultiDayView(element, calendar) {
             if(t.days == null) {
                 if(opt('days') != null) {
                     days = opt('days');
+
+                    var start = cloneDate(days[0], true);
+                    var end = cloneDate(days[days.length-1], true);
+
+                    t.title = formatDate(start, opt('titleFormat'));
+
+                    t.start = t.visStart = start;
+                    t.end = t.visEnd = end;
                 }
                 else {
                     skipHiddenDays(date, delta < 0 ? -1 : 1);

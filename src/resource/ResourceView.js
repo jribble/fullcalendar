@@ -1005,7 +1005,7 @@ function ResourceView(element, calendar, viewName) {
         var dayDelta = 0;
 
         for(var i=0;i<t.days.length;i++) {
-            if (t.days[i].getTime() == date.getTime()) {
+            if (moment(t.days[i]).isSame(date, 'day')) {
                 dayDelta = i;
                 break;
             }
