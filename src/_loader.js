@@ -40,6 +40,7 @@ if (debug && (!window.console || !window.console.log)) {
 js('defaults.js');
 js('main.js');
 js('ResourceManager.js');
+js('HighlightManager.js');
 js('Calendar.js');
 js('Header.js');
 js('EventManager.js');

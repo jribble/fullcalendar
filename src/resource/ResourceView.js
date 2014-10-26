@@ -165,6 +165,7 @@ function ResourceView(element, calendar, viewName) {
     var minMinute, maxMinute;
     var colFormat;
     var resources = t.resources;
+    var highlights = t.highlights;
     var showWeekNumbers;
     var weekNumberTitle;
     var weekNumberFormat;
@@ -191,6 +192,9 @@ function ResourceView(element, calendar, viewName) {
         }else{
 			buildDayTable(); // rebuilds day table
         }
+
+        highlights = t.highlights = calendar.fetchHighlights();
+        renderHighlights(highlights);
     }
 	
 

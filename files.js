@@ -20,6 +20,7 @@ module.exports = {
 				'src/Header.js',
 				'src/EventManager.js',
                 'src/ResourceManager.js',
+                'src/HighlightManager.js',
 				'src/date_util.js',
 				'src/util.js',
 				'src/basic/MonthView.js',

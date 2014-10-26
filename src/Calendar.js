@@ -36,6 +36,7 @@ function Calendar(element, options, eventSources, resourceSources) {
 	var fetchEvents = t.fetchEvents;
     
     ResourceManager.call(t, options);
+    HighlightManager.call(t, options);
 	
 	// locals
 	var _element = element[0];

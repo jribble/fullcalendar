@@ -80,10 +80,6 @@ function ResourceEventRenderer() {
         }
 
         renderSlotSegs(compileSlotSegs(slotEvents), modifiedEventId);
-
-        t.highlights = opt('highlights');
-        if(t.highlights == null) t.highlights = [];
-        renderHighlights(t.highlights);
     }
 	
 	
@@ -518,7 +514,7 @@ function ResourceEventRenderer() {
     // TODO: when we refactor this, when user returns `false` eventRender, don't have empty space
     // TODO: refactor will include using pixels to detect collisions instead of dates (handy for seg cmp)
 
-    function renderHighlightSegs(segs, modifiedEventId) {
+    function renderHighlightSegs(segs) {
 
         var i, segCnt=segs.length, seg,
             highlight,
@@ -548,7 +544,7 @@ function ResourceEventRenderer() {
             seg.left = left;
             seg.outerWidth = width;
             seg.outerHeight = bottom - top;
-            html += highlightSegHtml(event, seg);
+            html += highlightSegHtml(highlight, seg);
         }
 
         segmentContainer[0].innerHTML = html; // faster than html()
