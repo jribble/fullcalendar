@@ -444,7 +444,7 @@ function ResourceView(element, calendar, viewName) {
         });
 
         // trigger events for resource column headers
-        var resths = dayTable.find('th[data-resource-id]');
+        var resths = dayTable.find('thead th[data-resource-id]');
         resths.each(function(index, element) {
             var resourceId = $.attr(element, 'data-resource-id');
             if(resourceId === "null") resourceId = null;
