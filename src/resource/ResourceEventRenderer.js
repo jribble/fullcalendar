@@ -49,6 +49,7 @@ function ResourceEventRenderer() {
     var colToResource = t.colToResource;  // imported from ResourceView.js
     var moveEvents = t.moveEvents;
     var getEventsById = t.getEventsById;
+    var rerenderFooter = t.rerenderFooter;
 	
 	// overrides
 	t.draggableDayEvent = draggableDayEvent;
@@ -63,9 +64,25 @@ function ResourceEventRenderer() {
     function eventDrop(e, event, dayDelta, minuteDelta, allDay, ev, ui, resourceId) {
         var oldAllDay = event.allDay;
         var eventId = event._id;
+
+        // rerender footer on all of the old event columns
+        // also set the new resource id on all of the events with this id
+        var events = getEventsById(eventId);
         var oldResourceId = event.resourceId;
-        event.resourceId = resourceId;
+        if(!!events) events.forEach(function(event) {
+            rerenderFooter(event.start, event.resourceId);
+            event.resourceId = resourceId;
+        });
+
         moveEvents(getEventsById(eventId), dayDelta, minuteDelta, allDay);
+
+        // rerender footer on all of the new event columns
+        events = getEventsById(eventId);
+        if(!!events) events.forEach(function(event) {
+            rerenderFooter(event.start, event.resourceId);
+            event.resourceId = resourceId;
+        });
+
         trigger(
             'eventDrop',
             e,
@@ -75,12 +92,28 @@ function ResourceEventRenderer() {
             allDay,
             function() {
                 // TODO: investigate cases where this inverse technique might not work
-                event.resourceId = oldResourceId;
+                // rerender footer on all of the old event columns
+                // also set the new resource id on all of the events with this id
+                var events = getEventsById(eventId);
+                if(!!events) events.forEach(function(event) {
+                    rerenderFooter(event.start, event.resourceId);
+                    event.resourceId = oldResourceId;
+                });
+
                 moveEvents(getEventsById(eventId), -dayDelta, -minuteDelta, oldAllDay);
+
+                // rerender footer on all of the new event columns
+                events = getEventsById(eventId);
+                if(!!events) events.forEach(function(event) {
+                    rerenderFooter(event.start, event.resourceId);
+                    event.resourceId = resourceId;
+                });
+
                 reportEventChange(eventId);
             },
             ev,
-            ui
+            ui,
+            oldResourceId
         );
         reportEventChange(eventId);
     }
@@ -747,6 +780,7 @@ function ResourceEventRenderer() {
                     resetElement();
                     eventElement.css('filter', ''); // clear IE opacity side-effects
                     showEvents(event, eventElement);
+                    trigger('eventDragCancel', eventElement, event, ev, ui);
                 }else{
                     // changed!
                     var minuteDelta = 0;
@@ -904,6 +938,8 @@ function ResourceEventRenderer() {
 					eventElement.css(origPosition);
 
                     showEvents(event, eventElement);
+
+                    trigger('eventDragCancel', eventElement, event, ev, ui);
                 }
             }
         });

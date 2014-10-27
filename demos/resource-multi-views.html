@@ -56,6 +56,9 @@
                     }
                     calendar.fullCalendar('unselect');
                 },
+                eventDragCancel: function( event ) {
+                    console.log("@@ drag cancel event " + event.title + ", start " + event.start + ", end " + event.end + ", resource " + event.resourceId);
+                },
                 eventResize: function(event, dayDelta, minuteDelta) {
                     console.log("@@ resize event " + event.title + ", start " + event.start + ", end " + event.end + ", resource " + event.resourceId);
                 },

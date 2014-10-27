@@ -44,6 +44,7 @@ function ResourceView(element, calendar, viewName) {
 	
     // exports
     t.renderResource = renderResource;
+    t.rerenderFooter = rerenderFooter;
     t.setWidth = setWidth;
     t.setHeight = setHeight;
 	t.afterRender = afterRender;
@@ -222,6 +223,18 @@ function ResourceView(element, calendar, viewName) {
         }
 
 		snapMinutes = opt('snapMinutes') || opt('slotMinutes');
+    }
+
+    function rerenderFooter(date, resourceId) {
+        // trigger events for resource column footers
+        var _resourceId = resourceId === null ? "null" : resourceId;
+        var dateString = moment(date).format("YYYY-MM-DD");
+        var footths = dayTable.find('tfoot th[data-resource-id="' + _resourceId + '" ][data-date="' + dateString + '"]');
+        footths.each(function(index, element) {
+            var el = $(element);
+            el.html('&nbsp;');
+            trigger('footerRender', el, resourceId, el);
+        });
     }
 	
 	
