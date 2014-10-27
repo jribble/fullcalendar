@@ -362,6 +362,7 @@ function Calendar(element, options, eventSources, resourceSources) {
 	// called when event data arrives
 	function reportEvents(_events) {
 		events = _events;
+        events.forEach(t.normalizeEvent);
 		renderEvents();
 	}
 
