@@ -41,21 +41,49 @@ function ResourceEventRenderer() {
     var reportEventElement = t.reportEventElement;
     var showEvents = t.showEvents;
     var hideEvents = t.hideEvents;
-    var eventDrop = t.eventDrop;
     var eventResize = t.eventResize;
     var renderDayOverlay = t.renderDayOverlay;
     var clearOverlays = t.clearOverlays;
 	var renderDayEvents = t.renderDayEvents;
     var calendar = t.calendar;
-    var formatDate = calendar.formatDate;
-    var formatDates = calendar.formatDates;
     var colToResource = t.colToResource;  // imported from ResourceView.js
-    //var resources = t.resources;  // imported from ResourceView.js
-	
+    var moveEvents = t.moveEvents;
+    var getEventsById = t.getEventsById;
 	
 	// overrides
 	t.draggableDayEvent = draggableDayEvent;
+    t.eventDrop = eventDrop;
 
+    // imports
+    var formatDate = calendar.formatDate;
+    var formatDates = calendar.formatDates;
+    var reportEventChange = calendar.reportEventChange;
+
+
+    function eventDrop(e, event, dayDelta, minuteDelta, allDay, ev, ui, resourceId) {
+        var oldAllDay = event.allDay;
+        var eventId = event._id;
+        var oldResourceId = event.resourceId;
+        event.resourceId = resourceId;
+        moveEvents(getEventsById(eventId), dayDelta, minuteDelta, allDay);
+        trigger(
+            'eventDrop',
+            e,
+            event,
+            dayDelta,
+            minuteDelta,
+            allDay,
+            function() {
+                // TODO: investigate cases where this inverse technique might not work
+                event.resourceId = oldResourceId;
+                moveEvents(getEventsById(eventId), -dayDelta, -minuteDelta, oldAllDay);
+                reportEventChange(eventId);
+            },
+            ev,
+            ui
+        );
+        reportEventChange(eventId);
+    }
 
 
     /* Rendering
@@ -712,9 +740,7 @@ function ResourceEventRenderer() {
                 }, ev, 'drag');
             },
             stop: function(ev, ui) {
-                var cell = hoverListener.stop();
                 clearOverlays();
-                if(!revert && cell) event.resourceId = resources[cell.col % t.resources.length].id;
                 trigger('eventDragStop', eventElement, event, ev, ui);
                 if (revert) {
                     // hasn't moved or is out of bounds (draggable has already reverted)
@@ -731,7 +757,10 @@ function ResourceEventRenderer() {
                         - (event.start.getHours() * 60 + event.start.getMinutes());
                     }
 
-                    eventDrop(this, event, dayDelta, minuteDelta, allDay, ev, ui);
+                    var resourceId = null;
+                    var cell = hoverListener.stop();
+                    resourceId = resources[cell.col % t.resources.length].id;
+                    eventDrop(this, event, dayDelta, minuteDelta, allDay, ev, ui, resourceId);
                 }
             }
         });
@@ -854,8 +883,7 @@ function ResourceEventRenderer() {
                 var resourceId = t.resources[resourceNum].id;
 
 				if (isInBounds && (isAllDay || dayDelta || minuteDelta || resourceId != event.resourceId)) { // changed!
-                    event.resourceId = resourceId;
-					eventDrop(this, event, dayDelta, isAllDay ? 0 : minuteDelta, isAllDay, ev, ui);
+					eventDrop(this, event, dayDelta, isAllDay ? 0 : minuteDelta, isAllDay, ev, ui, resourceId);
 				}
 				else { // either no change or out-of-bounds (draggable has already reverted)
 

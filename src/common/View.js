@@ -21,10 +21,12 @@ function View(element, calendar, viewName) {
 	t.showEvents = showEvents;
 	t.hideEvents = hideEvents;
 	t.eventDrop = eventDrop;
+    t.moveEvents = moveEvents;
 	t.eventResize = eventResize;
 	// t.title
 	// t.start, t.end
 	// t.visStart, t.visEnd
+    t.getEventsById = getEventsById;
 	
 	
 	// imports
@@ -38,9 +40,11 @@ function View(element, calendar, viewName) {
 	var eventElementsByID = {}; // eventID mapped to array of jQuery elements
 	var eventElementCouples = []; // array of objects, { event, element } // TODO: unify with segment system
 	var options = calendar.options;
-	
-	
-	
+
+    function getEventsById(eventId) {
+        return eventsByID[eventId];
+    }
+
 	function opt(name, viewNameOverride) {
 		var v = options[name];
 		if ($.isPlainObject(v)) {
