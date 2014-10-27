@@ -80,12 +80,16 @@ function ResourceEventRenderer() {
         }
 
         renderSlotSegs(compileSlotSegs(slotEvents), modifiedEventId);
+
+        var highlights = t.highlights = calendar.fetchHighlights();
+        renderHighlights(highlights);
     }
 	
 	
     function clearEvents() {
         getDaySegmentContainer().empty();
         getSlotSegmentContainer().empty();
+        clearHighlights();
     }
 
     function renderHighlights(highlights) {

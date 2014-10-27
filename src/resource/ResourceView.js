@@ -193,8 +193,6 @@ function ResourceView(element, calendar, viewName) {
 			buildDayTable(); // rebuilds day table
         }
 
-        highlights = t.highlights = calendar.fetchHighlights();
-        renderHighlights(highlights);
     }
 	
 
