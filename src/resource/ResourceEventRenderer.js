@@ -50,7 +50,7 @@ function ResourceEventRenderer() {
     var formatDate = calendar.formatDate;
     var formatDates = calendar.formatDates;
     var colToResource = t.colToResource;  // imported from ResourceView.js
-    var resources = t.resources;  // imported from ResourceView.js
+    //var resources = t.resources;  // imported from ResourceView.js
 	
 	
 	// overrides
@@ -75,7 +75,7 @@ function ResourceEventRenderer() {
         }
 
         if (opt('allDaySlot')) {
-            renderDayEvents(compileDaySegs(dayEvents), modifiedEventId, resources);
+            renderDayEvents(compileDaySegs(dayEvents), modifiedEventId, t.resources);
             setHeight(); // no params means set to viewHeight
         }
 
@@ -143,7 +143,7 @@ function ResourceEventRenderer() {
 
 
     function resourceDate(col) {
-        var delta = Math.floor(col / resources.length);
+        var delta = Math.floor(col / t.resources.length);
         var date = cloneDate(t.visStart);
         return addDays(date, delta);
     }
@@ -671,9 +671,8 @@ function ResourceEventRenderer() {
 				hoverListener.start(function(cell, origCell) {
                     clearOverlays();
                     if (cell) {
-                        revert = false;
-                        var origResourceNum = origCell.col % resources.length;
-                        var resourceNum = cell.col % resources.length;
+                        var origResourceNum = origCell.col % t.resources.length;
+                        var resourceNum = cell.col % t.resources.length;
 						var origDate = cellToDate(0, origCell.col);
 						var date = cellToDate(0, cell.col);
 						dayDelta = dayDiff(date, origDate);
@@ -715,7 +714,7 @@ function ResourceEventRenderer() {
             stop: function(ev, ui) {
                 var cell = hoverListener.stop();
                 clearOverlays();
-                if(!revert && cell) event.resourceId = resources[cell.col % resources.length].id;
+                if(!revert && cell) event.resourceId = resources[cell.col % t.resources.length].id;
                 trigger('eventDragStop', eventElement, event, ev, ui);
                 if (revert) {
                     // hasn't moved or is out of bounds (draggable has already reverted)
@@ -789,7 +788,7 @@ function ResourceEventRenderer() {
 				colDelta = prevColDelta = 0;
 				dayDelta = 0;
                 minuteDelta = prevMinuteDelta = 0;
-                resourceNum = (origCell.col % resources.length);
+                resourceNum = (origCell.col % t.resources.length);
 
 			},
 			drag: function(ev, ui) {
@@ -817,7 +816,7 @@ function ResourceEventRenderer() {
 						col = Math.min(colCnt-1, col);
 						var date = cellToDate(0, col);
 						dayDelta = dayDiff(date, origDate);
-                        resourceNum = (col % resources.length);
+                        resourceNum = (col % t.resources.length);
                     }
 
 					// calculate minute delta (only if over slots)
@@ -852,7 +851,7 @@ function ResourceEventRenderer() {
                 clearOverlays();
                 trigger('eventDragStop', eventElement, event, ev, ui);
 
-                var resourceId = resources[resourceNum].id;
+                var resourceId = t.resources[resourceNum].id;
 
 				if (isInBounds && (isAllDay || dayDelta || minuteDelta || resourceId != event.resourceId)) { // changed!
                     event.resourceId = resourceId;
