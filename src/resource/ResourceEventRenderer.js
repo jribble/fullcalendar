@@ -80,7 +80,6 @@ function ResourceEventRenderer() {
         events = getEventsById(eventId);
         if(!!events) events.forEach(function(event) {
             rerenderFooter(event.start, event.resourceId);
-            event.resourceId = resourceId;
         });
 
         trigger(
@@ -106,7 +105,6 @@ function ResourceEventRenderer() {
                 events = getEventsById(eventId);
                 if(!!events) events.forEach(function(event) {
                     rerenderFooter(event.start, event.resourceId);
-                    event.resourceId = resourceId;
                 });
 
                 reportEventChange(eventId);
