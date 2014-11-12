@@ -58,9 +58,9 @@ function SelectionManager() {
 	}
 	
 	
-	function reportSelection(startDate, endDate, allDay, ev, resource) {
+	function reportSelection(startDate, endDate, allDay, ev, resource, lastDate) {
 		selected = true;
-		trigger('select', null, startDate, endDate, allDay, ev, resource);
+		trigger('select', null, startDate, endDate, allDay, ev, resource, lastDate);
 	}
 	
 	
