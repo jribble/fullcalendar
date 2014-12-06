@@ -837,7 +837,7 @@ function ResourceView(element, calendar, viewName) {
 	
 	
 	function afterRender() { // after the view has been freshly rendered and sized
-		resetScroll();
+		//resetScroll();
     }
 	
 
