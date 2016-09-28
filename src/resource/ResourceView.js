@@ -77,6 +77,7 @@ function ResourceView(element, calendar, viewName) {
     t.dragStart = dragStart;
     t.dragStop = dragStop;
     t.colToResource = colToResource;
+    t.resetScroll = resetScroll;
     t.resources = calendar.fetchResources();
     
 	
